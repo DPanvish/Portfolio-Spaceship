@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import SceneLights from './SceneLights';
 import SpaceBackground from './SpaceBackground';
 import Spaceship from './Spaceship';
+import PlanetWaypoint from './PlanetWaypoint';
 
 // SceneCanvas is a Client Component — Three.js requires browser APIs.
 // It fills the full viewport and will house the entire spaceship journey.
@@ -41,6 +42,7 @@ export default function SceneCanvas() {
         <Spaceship position={[0, -1, 4]} />
         
         {/* Waypoint models added in Phase 4 */}
+        <PlanetWaypoint position={[0, -2, -15]} color="#4488ff" />
 
         {/* Preload warms up all assets in the Suspense subtree */}
         <Preload all />
