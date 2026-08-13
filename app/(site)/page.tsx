@@ -1,12 +1,17 @@
-// Public portfolio entry point — the spaceship journey lives here.
-// The 3D <Canvas> will be mounted in this page (Phase 2, Step 2.5+).
+import SceneCanvas from '@/components/scene/SceneCanvas';
+
+// This is a Server Component — only SceneCanvas (Client) renders the 3D world.
+// The outer div is the full-screen container; the Canvas mounts inside it.
 
 export default function SitePage() {
   return (
-    <main className="relative w-full h-screen bg-black flex items-center justify-center">
-      <p className="text-white/40 font-mono text-sm tracking-widest uppercase">
-        🚀 Spaceship initializing...
-      </p>
-    </main>
+    // Scroll container — height drives the camera journey (Phase 3).
+    // For now, h-screen so we can verify the canvas renders.
+    <div className="relative w-full h-screen overflow-hidden bg-black">
+      <SceneCanvas />
+
+      {/* HUD overlays are layered above the canvas via absolute positioning */}
+      {/* Content overlays added in Phase 4 */}
+    </div>
   );
 }
