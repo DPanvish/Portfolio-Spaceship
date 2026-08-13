@@ -1,14 +1,14 @@
 'use client';
 
 import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, GroupProps } from '@react-three/fiber';
 import * as THREE from 'three';
 
 // PlanetWaypoint (Placeholder)
 // Represents a destination on the journey (e.g. About, Experience).
 // A slow-spinning sphere with a glowing atmosphere ring.
 
-interface PlanetWaypointProps extends JSX.IntrinsicElements['group'] {
+interface PlanetWaypointProps extends GroupProps {
   color?: string;
 }
 

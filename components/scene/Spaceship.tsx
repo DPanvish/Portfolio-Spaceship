@@ -1,14 +1,14 @@
 'use client';
 
 import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, GroupProps } from '@react-three/fiber';
 import * as THREE from 'three';
 
 // Spaceship (Placeholder)
 // A procedural geometry placeholder until a real .glb model is added.
 // It consists of a sleek cone body and two small swept-back wings.
 
-export default function Spaceship(props: JSX.IntrinsicElements['group']) {
+export default function Spaceship(props: GroupProps) {
   const shipRef = useRef<THREE.Group>(null);
 
   // Subtle idle hovering animation
