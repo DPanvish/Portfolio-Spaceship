@@ -3,6 +3,7 @@
 import { Canvas } from '@react-three/fiber';
 import { Preload, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
 import { Suspense } from 'react';
+import * as THREE from 'three';
 import SceneLights from './SceneLights';
 import SpaceBackground from './SpaceBackground';
 import Spaceship from './Spaceship';
@@ -15,34 +16,32 @@ export default function SceneCanvas() {
   return (
     <Canvas
       id="spaceship-canvas"
-      // Camera starts pulled back, looking forward along the journey path.
       camera={{
-        fov: 60,
+        fov: 55,
         near: 0.1,
         far: 1000,
-        position: [0, 0, 10],
+        position: [0, 1.5, 6],
       }}
-      // Flat tone-mapping keeps post-processing control with us, not Three.js.
       gl={{
         antialias: true,
         alpha: false,
         powerPreference: 'high-performance',
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1.1,
       }}
-      // Allow CSS to control canvas size (full screen via parent div).
       style={{ position: 'absolute', inset: 0 }}
-      // Lower pixel ratio on low-end devices for performance (Phase 7).
       dpr={[1, 2]}
     >
       {/* Suspense boundary: children load async; fallback is the dark void */}
       <Suspense fallback={null}>
         <SceneLights />
         <SpaceBackground />
-        
-        {/* The player's ship */}
-        <Spaceship position={[0, -1, 4]} />
-        
-        {/* Waypoint models added in Phase 4 */}
-        <PlanetWaypoint position={[0, -2, -15]} color="#4488ff" />
+
+        {/* The player's ship — positioned center-front, rotated to face away */}
+        <Spaceship position={[0, -0.3, 0] as const} rotation={[0, Math.PI, 0] as const} />
+
+        {/* First waypoint — a blue planet in the distance */}
+        <PlanetWaypoint position={[0, -2, -25] as const} color="#4488ff" />
 
         {/* Preload warms up all assets in the Suspense subtree */}
         <Preload all />
