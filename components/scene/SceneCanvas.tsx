@@ -8,6 +8,7 @@ import SceneLights from './SceneLights';
 import SpaceBackground from './SpaceBackground';
 import Spaceship from './Spaceship';
 import PlanetWaypoint from './PlanetWaypoint';
+import CameraRig from './CameraRig';
 
 // SceneCanvas is a Client Component — Three.js requires browser APIs.
 // It fills the full viewport and will house the entire spaceship journey.
@@ -34,6 +35,7 @@ export default function SceneCanvas() {
     >
       {/* Suspense boundary: children load async; fallback is the dark void */}
       <Suspense fallback={null}>
+        <CameraRig />
         <SceneLights />
         <SpaceBackground />
 
