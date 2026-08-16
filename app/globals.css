@@ -30,12 +30,10 @@ html,
 body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
+  min-height: 100vh;
   background: #000000;
   color: var(--color-text);
   font-family: var(--font-sans, sans-serif);
-  /* Lenis smooth scroll will override this in Phase 3 */
   overflow-x: hidden;
 }
 
