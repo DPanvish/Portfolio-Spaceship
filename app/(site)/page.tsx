@@ -5,9 +5,8 @@ import SceneCanvas from '@/components/scene/SceneCanvas';
 
 export default function SitePage() {
   return (
-    // Scroll container — height drives the camera journey (Phase 3).
-    // For now, h-screen so we can verify the canvas renders.
-    <div className="relative w-full h-screen overflow-hidden bg-black">
+    // This div fills the fixed inset-0 viewport provided by ScrollProvider
+    <div className="w-full h-full bg-black">
       <SceneCanvas />
 
       {/* HUD overlays are layered above the canvas via absolute positioning */}
