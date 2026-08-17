@@ -33,36 +33,36 @@ export default function AboutOverlay() {
     >
       {/* Viewscreen Panel */}
       <div 
-        className="w-full max-w-2xl p-8 mx-4 rounded-2xl border border-cyan-500/30 bg-black/60 backdrop-blur-md pointer-events-auto shadow-[0_0_50px_rgba(0,240,255,0.1)]"
+        className="relative w-full max-w-2xl p-8 mx-4 hud-container scanline bg-black/60 backdrop-blur-xl border border-cyan-500/50 pointer-events-auto shadow-[0_0_80px_rgba(0,240,255,0.15)]"
         style={{
           transform: `scale(${0.95 + opacity * 0.05}) translateY(${(1 - opacity) * 20}px)`,
         }}
       >
-        <div className="flex items-start gap-8">
+        <div className="flex items-start gap-8 relative z-10">
           {/* Avatar / Profile Frame */}
-          <div className="shrink-0 relative">
-            <div className="w-32 h-32 rounded-xl overflow-hidden border-2 border-cyan-500/50">
+          <div className="shrink-0 relative target-brackets p-1">
+            <div className="w-32 h-32 hud-container-alt overflow-hidden bg-cyan-950/30">
               <img 
                 src={content.profilePhoto} 
                 alt="Profile"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover mix-blend-luminosity hover:mix-blend-normal transition-all duration-500"
               />
             </div>
-            {/* Sci-fi decor */}
-            <div className="absolute -bottom-2 -right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-400" />
-            <div className="absolute -top-2 -left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-400" />
+            {/* Absolute positioning decor */}
+            <div className="absolute top-0 right-0 w-2 h-8 bg-cyan-500/20" />
+            <div className="absolute bottom-0 left-0 w-8 h-2 bg-cyan-500/20" />
           </div>
 
           {/* Content */}
           <div className="flex-1">
-            <p className="text-cyan-400 font-mono text-sm mb-2 tracking-widest uppercase">
-              // Subject Database_
+            <p className="text-cyan-400 font-mono text-xs mb-2 tracking-[0.2em] uppercase blinking-cursor">
+              // Subject Database
             </p>
-            <h2 className="text-3xl font-bold text-white mb-6">
+            <h2 className="text-4xl font-mono font-bold text-white mb-6 uppercase tracking-wider">
               {content.headline}
             </h2>
             
-            <div className="space-y-4 text-gray-300 leading-relaxed text-sm">
+            <div className="space-y-4 text-gray-300 leading-relaxed text-sm font-light">
               <p>{content.bio}</p>
             </div>
 
@@ -71,7 +71,7 @@ export default function AboutOverlay() {
                 href={content.resumeUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="btn-interactive hover-blur-transition px-6 py-2 rounded border border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 hover:text-white font-mono text-sm tracking-wide inline-block"
+                className="btn-interactive hover-blur-transition px-8 py-3 hud-container-alt border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-black font-mono text-sm tracking-widest uppercase inline-block shadow-[inset_0_0_20px_rgba(0,240,255,0.2)]"
               >
                 [ Download_Dossier ]
               </a>

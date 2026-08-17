@@ -17,6 +17,7 @@
   --color-background: #000000;
   --color-foreground: var(--color-text);
   --font-sans: var(--font-outfit);
+  --font-mono: var(--font-tech), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   
   /* Emil Kowalski's recommended easings */
   --ease-ui-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -80,3 +81,84 @@ body {
   /* Subtle blur when hovering to mask the color transition */
   filter: blur(0.5px);
 }
+
+/* ─── Awwwards Sci-Fi HUD Effects ────────────────────────── */
+
+/* Angled container with 45deg cut corners */
+.hud-container {
+  clip-path: polygon(
+    20px 0%, 
+    100% 0, 
+    100% calc(100% - 20px), 
+    calc(100% - 20px) 100%, 
+    0 100%, 
+    0 20px
+  );
+}
+
+.hud-container-alt {
+  clip-path: polygon(
+    0 0, 
+    calc(100% - 20px) 0, 
+    100% 20px, 
+    100% 100%, 
+    20px 100%, 
+    0 calc(100% - 20px)
+  );
+}
+
+/* Subtle scanning line effect */
+.scanline::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to bottom, rgba(0,240,255,0), rgba(0,240,255,0.5), rgba(0,240,255,0));
+  opacity: 0.3;
+  animation: scan 4s linear infinite;
+  pointer-events: none;
+  z-index: 50;
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000px); }
+}
+
+/* Targeting Brackets */
+.target-brackets {
+  position: relative;
+}
+.target-brackets::before,
+.target-brackets::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: rgba(0,240,255,0.7);
+  border-style: solid;
+  pointer-events: none;
+}
+.target-brackets::before {
+  top: -4px;
+  left: -4px;
+  border-width: 2px 0 0 2px;
+}
+.target-brackets::after {
+  bottom: -4px;
+  right: -4px;
+  border-width: 0 2px 2px 0;
+}
+
+/* Ticker text blinking cursor */
+.blinking-cursor::after {
+  content: "_";
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
