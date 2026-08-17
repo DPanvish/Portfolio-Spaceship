@@ -71,7 +71,7 @@ export default function AboutOverlay() {
                 href={content.resumeUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="px-6 py-2 rounded border border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 hover:text-white transition-colors font-mono text-sm tracking-wide"
+                className="btn-interactive hover-blur-transition px-6 py-2 rounded border border-cyan-500 text-cyan-400 hover:bg-cyan-500/20 hover:text-white font-mono text-sm tracking-wide inline-block"
               >
                 [ Download_Dossier ]
               </a>

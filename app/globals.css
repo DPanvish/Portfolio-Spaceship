@@ -17,6 +17,10 @@
   --color-background: #000000;
   --color-foreground: var(--color-text);
   --font-sans: var(--font-outfit);
+  
+  /* Emil Kowalski's recommended easings */
+  --ease-ui-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-ui-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 /* ─── Reset / Base ──────────────────────────────────────── */
@@ -53,4 +57,26 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/* ─── UI Interactions (Emil Kowalski Philosophy) ────────── */
+
+/* Buttons must feel responsive: scale(0.97) on press */
+.btn-interactive {
+  transition: transform 160ms var(--ease-ui-out), background-color 160ms ease;
+  transform-origin: center;
+}
+
+.btn-interactive:active {
+  transform: scale(0.97);
+}
+
+/* Blur to mask imperfect transitions during hover state changes */
+.hover-blur-transition {
+  transition: filter 200ms ease, opacity 200ms ease, background-color 200ms ease, border-color 200ms ease;
+}
+
+.hover-blur-transition:hover {
+  /* Subtle blur when hovering to mask the color transition */
+  filter: blur(0.5px);
 }

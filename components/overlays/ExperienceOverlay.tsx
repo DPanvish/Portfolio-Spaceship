@@ -52,7 +52,7 @@ export default function ExperienceOverlay() {
               <div className="absolute left-[-5px] top-1.5 w-4 h-4 rounded-full border-2 border-cyan-400 bg-black shadow-[0_0_10px_rgba(0,240,255,0.5)]" />
               
               <div 
-                className="bg-cyan-950/20 border border-cyan-900/50 rounded-xl p-5 hover:bg-cyan-900/30 hover:border-cyan-500/50 transition-all duration-300"
+                className="bg-cyan-950/20 border border-cyan-900/50 rounded-xl p-5 hover:bg-cyan-900/30 hover:border-cyan-500/50 hover-blur-transition"
                 style={{
                   // Stagger entrance based on opacity to create a cascading effect
                   opacity: Math.max(0, Math.min(1, opacity * (1 + index * 0.5))),
