@@ -13,10 +13,10 @@ export default function ExperienceOverlay() {
     getExperience().then(setExperiences);
   }, []);
 
-  // Waypoint 2 (Experience) is at t = 0.4
-  // Visible between 0.32 and 0.48, fully opaque at 0.4
-  const center = 0.4;
-  const spread = 0.08;
+  // Portal 2 (Experience) threshold is at t = 0.50
+  // Center is at 0.55, spread 0.05
+  const center = 0.55;
+  const spread = 0.05;
   const distance = Math.abs(scrollProgress - center);
   const opacity = Math.max(0, 1 - distance / spread);
 
@@ -35,7 +35,7 @@ export default function ExperienceOverlay() {
       >
         <div className="relative z-10 p-6 border-b border-cyan-500/30 bg-black/40">
           <p className="text-cyan-400 font-mono text-xs mb-1 tracking-[0.2em] uppercase blinking-cursor">
-            // Mission Log
+            {"// Mission Log"}
           </p>
           <h2 className="text-2xl font-mono font-bold text-white uppercase tracking-widest">Experience Timeline</h2>
         </div>
@@ -64,7 +64,7 @@ export default function ExperienceOverlay() {
                     <p className="text-cyan-400 font-mono text-sm tracking-wide">{exp.company}</p>
                   </div>
                   <span className="text-xs text-cyan-200/50 font-mono border border-cyan-900 bg-cyan-950/50 px-3 py-1 hud-container-alt">
-                    {exp.startDate} // {exp.endDate || 'PRESENT'}
+                    {exp.startDate} {"//"} {exp.endDate || 'PRESENT'}
                   </span>
                 </div>
                 

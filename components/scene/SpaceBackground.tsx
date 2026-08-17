@@ -71,17 +71,7 @@ function StarLayer({
     [count, spread, minSize, maxSize],
   );
 
-  const material = useMemo(() => {
-    return new THREE.PointsMaterial({
-      size: 1,
-      sizeAttenuation: true,
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.9,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
-  }, []);
+  const materialRef = useRef<THREE.PointsMaterial>(null);
 
   useFrame((_state, delta) => {
     if (!pointsRef.current) return;
@@ -89,13 +79,13 @@ function StarLayer({
     pointsRef.current.rotation.x += delta * rotationSpeed * 0.3;
 
     // Twinkle: modulate opacity slightly
-    if (twinkle) {
-      material.opacity = 0.75 + Math.sin(_state.clock.elapsedTime * 2) * 0.15;
+    if (twinkle && materialRef.current) {
+      materialRef.current.opacity = 0.75 + Math.sin(_state.clock.elapsedTime * 2) * 0.15;
     }
   });
 
   return (
-    <points ref={pointsRef} material={material}>
+    <points ref={pointsRef}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -110,6 +100,16 @@ function StarLayer({
           args={[sizes, 1]}
         />
       </bufferGeometry>
+      <pointsMaterial 
+        ref={materialRef}
+        size={1}
+        sizeAttenuation={true}
+        vertexColors={true}
+        transparent={true}
+        opacity={0.9}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
     </points>
   );
 }

@@ -15,11 +15,12 @@ export default function AboutOverlay() {
     getAbout().then(setContent);
   }, []);
 
-  // Calculate opacity based on scroll progress.
-  // Waypoint 1 (About) is at t = 0.2
-  // We want it visible between 0.12 and 0.28, fully opaque at 0.2
-  const center = 0.2;
-  const spread = 0.08;
+  // Waypoint 1 (About Portal) is at t = 0.25
+  // The ship crosses the threshold at exactly 0.25.
+  // We want the UI to violently appear AFTER we cross the threshold (e.g. 0.25 to 0.35)
+  // Let's make the center 0.30
+  const center = 0.30;
+  const spread = 0.05;
   const distance = Math.abs(scrollProgress - center);
   const opacity = Math.max(0, 1 - distance / spread);
 
@@ -56,7 +57,7 @@ export default function AboutOverlay() {
           {/* Content */}
           <div className="flex-1">
             <p className="text-cyan-400 font-mono text-xs mb-2 tracking-[0.2em] uppercase blinking-cursor">
-              // Subject Database
+              {"// Subject Database"}
             </p>
             <h2 className="text-4xl font-mono font-bold text-white mb-6 uppercase tracking-wider">
               {content.headline}

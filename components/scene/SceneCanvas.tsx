@@ -6,12 +6,8 @@ import { Suspense } from 'react';
 import * as THREE from 'three';
 import SceneLights from './SceneLights';
 import SpaceBackground from './SpaceBackground';
-import Spaceship from './Spaceship';
-import PlanetWaypoint from './PlanetWaypoint';
-import CameraRig from './CameraRig';
-
-// SceneCanvas is a Client Component — Three.js requires browser APIs.
-// It fills the full viewport and will house the entire spaceship journey.
+import JourneyRig from './JourneyRig';
+import PortalGateway from './PortalGateway';
 
 export default function SceneCanvas() {
   return (
@@ -33,23 +29,22 @@ export default function SceneCanvas() {
       style={{ position: 'absolute', inset: 0 }}
       dpr={[1, 2]}
     >
-      {/* Suspense boundary: children load async; fallback is the dark void */}
       <Suspense fallback={null}>
-        <CameraRig />
+        {/* The ship and camera controller */}
+        <JourneyRig />
+        
         <SceneLights />
         <SpaceBackground />
 
-        {/* The player's ship — positioned center-front, rotated to face away */}
-        <Spaceship position={[0, -0.3, 0] as const} rotation={[0, Math.PI, 0] as const} />
+        {/* Portal 1: About */}
+        <PortalGateway position={[0, 0, -100]} color="#00f0ff" label="ABOUT" />
+        
+        {/* Portal 2: Experience */}
+        <PortalGateway position={[0, 0, -200]} color="#f000ff" label="EXPERIENCE" />
 
-        {/* First waypoint — a blue planet in the distance */}
-        <PlanetWaypoint position={[0, -2, -25] as const} color="#4488ff" />
-
-        {/* Preload warms up all assets in the Suspense subtree */}
         <Preload all />
       </Suspense>
 
-      {/* Adaptive performance — reduces pixel ratio when FPS drops */}
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
     </Canvas>
