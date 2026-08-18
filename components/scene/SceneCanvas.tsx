@@ -1,56 +1,36 @@
 'use client';
 
+import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Preload, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
-import { Suspense } from 'react';
 import * as THREE from 'three';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import SceneLights from './SceneLights';
-import SpaceBackground from './SpaceBackground';
-import JourneyRig from './JourneyRig';
-import PortalGateway from './PortalGateway';
+import Spaceship from './Spaceship';
 
 export default function SceneCanvas() {
   return (
     <Canvas
       id="spaceship-canvas"
       camera={{
-        fov: 55,
+        fov: 45,
         near: 0.1,
-        far: 1000,
-        position: [0, 1.5, 6],
+        far: 100,
+        position: [0, 0.5, 5],
       }}
       gl={{
         antialias: true,
-        alpha: false,
+        alpha: true,
         powerPreference: 'high-performance',
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 1.1,
+        toneMappingExposure: 1.2,
       }}
-      style={{ position: 'absolute', inset: 0 }}
-      dpr={[1, 1.5]}  
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+      dpr={[1, 1.5]}
     >
       <Suspense fallback={null}>
-        <JourneyRig />
         <SceneLights />
-        <SpaceBackground />
-
-        {/* Portal 1: About — cyan */}
-        <PortalGateway position={[0, 0, -100]} color="#00f0ff" label="ABOUT" />
-
-        {/* Portal 2: Experience — magenta */}
-        <PortalGateway position={[0, 0, -200]} color="#f000ff" label="EXPERIENCE" />
-
+        <Spaceship position={[0, -0.3, 0]} rotation={[0, Math.PI, 0]} />
         <Preload all />
-
-        {/* Single lightweight Bloom pass — no ChromaticAberration */}
-        <EffectComposer disableNormalPass>
-          <Bloom
-            luminanceThreshold={0.4}
-            mipmapBlur
-            intensity={0.8}
-          />
-        </EffectComposer>
       </Suspense>
 
       <AdaptiveDpr pixelated />
