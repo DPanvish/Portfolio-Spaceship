@@ -152,20 +152,16 @@ function NebulaCloud({
 export default function SpaceBackground() {
   return (
     <>
-      {/* Layer 1 — Dense distant stars */}
-      <StarLayer count={6000} spread={400} minSize={0.3} maxSize={0.8} rotationSpeed={0.002} />
+      {/* Layer 1 — Dense distant stars (Reduced count for performance) */}
+      <StarLayer count={2000} spread={400} minSize={0.4} maxSize={0.8} rotationSpeed={0.001} />
 
       {/* Layer 2 — Mid-range stars with twinkle */}
-      <StarLayer count={1500} spread={200} minSize={0.6} maxSize={1.5} rotationSpeed={0.004} twinkle />
+      <StarLayer count={500} spread={200} minSize={0.8} maxSize={1.5} rotationSpeed={0.002} twinkle />
 
       {/* Layer 3 — Sparse bright nearby stars */}
-      <StarLayer count={300} spread={100} minSize={1.0} maxSize={2.5} rotationSpeed={0.006} />
+      <StarLayer count={100} spread={100} minSize={1.5} maxSize={2.5} rotationSpeed={0.004} />
 
-      {/* Nebula Clouds — distant colored gas */}
-      <NebulaCloud position={[-120, 40, -250]} color="#1a0040" size={120} opacity={0.035} />
-      <NebulaCloud position={[100, -30, -300]} color="#001030" size={100} opacity={0.03} />
-      <NebulaCloud position={[50, 80, -200]} color="#100025" size={80} opacity={0.025} />
-      <NebulaCloud position={[-80, -60, -180]} color="#0a1530" size={90} opacity={0.02} />
+      {/* Nebula Clouds removed due to severe fill-rate / overdraw performance penalties on GPUs */}
     </>
   );
 }

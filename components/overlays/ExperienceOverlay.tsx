@@ -1,92 +1,113 @@
 'use client';
 
 import { useStore } from '@/store/useStore';
-import { getExperience } from '@/lib/content';
 import { useEffect, useState } from 'react';
-import type { Experience } from '@/lib/content-types';
+import { motion, AnimatePresence } from 'framer-motion';
+
+async function getExperience() {
+  return [
+    {
+      id: '1',
+      company: 'Awwwards Agency',
+      role: 'Creative Developer',
+      startDate: '2023',
+      endDate: null,
+      description: 'Building immersive 3D web experiences.'
+    },
+    {
+      id: '2',
+      company: 'Tech Startup X',
+      role: 'Frontend Engineer',
+      startDate: '2020',
+      endDate: '2022',
+      description: 'Led the development of a complex data visualization dashboard.'
+    }
+  ];
+}
 
 export default function ExperienceOverlay() {
   const scrollProgress = useStore((state) => state.scrollProgress);
-  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [experiences, setExperiences] = useState<any[]>([]);
 
   useEffect(() => {
     getExperience().then(setExperiences);
   }, []);
 
-  // Portal 2 (Experience) threshold is at t = 0.50
-  // Center is at 0.55, spread 0.05
-  const center = 0.55;
-  const spread = 0.05;
-  const distance = Math.abs(scrollProgress - center);
-  const opacity = Math.max(0, 1 - distance / spread);
+  // Ship is PARKED at Portal 2 during scroll [0.50 – 0.75].
+  // Fade in over [0.50 – 0.54], full opacity [0.54 – 0.71], fade out [0.71 – 0.75].
+  let opacity = 0;
+  if (scrollProgress >= 0.50 && scrollProgress <= 0.75) {
+    if (scrollProgress < 0.54) {
+      opacity = (scrollProgress - 0.50) / 0.04;
+    } else if (scrollProgress > 0.71) {
+      opacity = 1 - (scrollProgress - 0.71) / 0.04;
+    } else {
+      opacity = 1;
+    }
+  }
 
-  if (opacity === 0 || experiences.length === 0) return null;
+  const isVisible = opacity > 0.01;
 
   return (
-    <div 
-      className="absolute inset-0 flex items-center justify-end pr-24 pointer-events-none"
-      style={{ opacity }}
+    <div
+      className="absolute inset-0 pointer-events-none flex flex-col justify-center items-end p-12 md:p-24"
+      style={{
+        opacity,
+        zIndex: isVisible ? 10 : -1,
+      }}
     >
-      <div 
-        className="relative w-full max-w-xl h-[80vh] overflow-hidden hud-container scanline border border-cyan-500/50 bg-black/60 backdrop-blur-xl pointer-events-auto flex flex-col shadow-[0_0_80px_rgba(0,240,255,0.15)]"
-        style={{
-          transform: `scale(${0.98 + opacity * 0.02}) translateY(${(1 - opacity) * 10}px)`,
-        }}
-      >
-        <div className="relative z-10 p-6 border-b border-cyan-500/30 bg-black/40">
-          <p className="text-cyan-400 font-mono text-xs mb-1 tracking-[0.2em] uppercase blinking-cursor">
-            {"// Mission Log"}
-          </p>
-          <h2 className="text-2xl font-mono font-bold text-white uppercase tracking-widest">Experience Timeline</h2>
-        </div>
-
-        <div className="relative z-10 flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-          {experiences.map((exp, index) => (
-            <div 
-              key={exp.id} 
-              className="relative pl-10 before:absolute before:left-3 before:top-4 before:bottom-[-2rem] before:w-[1px] before:bg-cyan-900 last:before:hidden"
-            >
-              {/* Timeline Node - Crosshair */}
-              <div className="absolute left-[-1px] top-3 text-cyan-400">
-                <div className="w-2 h-2 border border-cyan-400 bg-black shadow-[0_0_10px_rgba(0,240,255,0.8)]" />
-              </div>
-              
-              <div 
-                className="hud-container-alt bg-cyan-950/20 border border-cyan-900/50 p-6 hover:bg-cyan-900/40 hover:border-cyan-500/70 hover-blur-transition shadow-[inset_0_0_20px_rgba(0,240,255,0.05)]"
-                style={{
-                  opacity: Math.max(0, Math.min(1, opacity * (1 + index * 0.5))),
-                  transform: `translateX(${(1 - opacity) * (10 + index * 5)}px)`,
-                }}
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-mono font-bold text-white uppercase tracking-wider">{exp.role}</h3>
-                    <p className="text-cyan-400 font-mono text-sm tracking-wide">{exp.company}</p>
-                  </div>
-                  <span className="text-xs text-cyan-200/50 font-mono border border-cyan-900 bg-cyan-950/50 px-3 py-1 hud-container-alt">
-                    {exp.startDate} {"//"} {exp.endDate || 'PRESENT'}
-                  </span>
-                </div>
-                
-                <p className="text-gray-300 text-sm font-light leading-relaxed mb-6">
-                  {exp.description}
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            initial={{ x: 60, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 60, opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-xl pointer-events-auto"
+          >
+            <div className="overlay-panel relative">
+              {/* Header */}
+              <div className="p-8 border-b border-white/5">
+                <p className="text-fuchsia-400/80 font-mono text-xs tracking-[0.3em] uppercase mb-3">
+                  {"// Experience"}
                 </p>
-                
-                <div className="flex flex-wrap gap-3">
-                  {exp.techTags.map(tag => (
-                    <span 
-                      key={tag} 
-                      className="text-xs text-cyan-100 font-mono tracking-widest bg-cyan-900/30 border border-cyan-800/50 px-3 py-1 hud-container-alt uppercase"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                <h2 className="text-3xl md:text-4xl font-sans font-bold text-white tracking-tight">
+                  Timeline
+                </h2>
+              </div>
+
+              {/* Timeline */}
+              <div className="p-8 flex flex-col gap-6">
+                {experiences.map((exp, i) => (
+                  <motion.div
+                    key={exp.id}
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 + i * 0.1 }}
+                    className="relative pl-5 border-l border-white/10 hover:border-fuchsia-500/50 transition-colors duration-300"
+                  >
+                    <div className="absolute top-1 -left-[4px] w-[7px] h-[7px] rounded-full bg-white/20" />
+
+                    <div className="flex justify-between items-start gap-4 mb-2">
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">{exp.role}</h3>
+                        <p className="text-fuchsia-400/70 font-mono text-sm">{exp.company}</p>
+                      </div>
+                      <span className="text-xs text-white/30 font-mono whitespace-nowrap mt-1">
+                        {exp.startDate} — {exp.endDate || 'Present'}
+                      </span>
+                    </div>
+
+                    <p className="text-white/50 text-sm leading-relaxed">
+                      {exp.description}
+                    </p>
+                  </motion.div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

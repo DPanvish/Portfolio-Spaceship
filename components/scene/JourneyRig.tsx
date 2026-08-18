@@ -6,80 +6,107 @@ import * as THREE from 'three';
 import { useStore } from '@/store/useStore';
 import Spaceship from './Spaceship';
 
+/**
+ * Maps scrollProgress (0→1) to a path position with FLAT PARKING ZONES at each portal.
+ * 
+ * Scroll layout:
+ *   [0.00 – 0.10]  Fly from start to Portal 1
+ *   [0.10 – 0.35]  PARKED at Portal 1 (About)
+ *   [0.35 – 0.50]  Fly from Portal 1 to Portal 2
+ *   [0.50 – 0.75]  PARKED at Portal 2 (Experience)
+ *   [0.75 – 0.90]  Fly from Portal 2 to end zone
+ *   [0.90 – 1.00]  PARKED at end zone
+ *
+ * pathT values correspond to positions on the CatmullRomCurve3:
+ *   Portal 1 = 0.25, Portal 2 = 0.50, End = 0.75
+ */
+function scrollToPathT(scroll: number): number {
+  // Segments: [scrollStart, scrollEnd] → [pathStart, pathEnd]
+  const segments = [
+    [0.00, 0.10, 0.00, 0.25],  // fly to portal 1
+    [0.10, 0.35, 0.25, 0.25],  // parked at portal 1
+    [0.35, 0.50, 0.25, 0.50],  // fly to portal 2
+    [0.50, 0.75, 0.50, 0.50],  // parked at portal 2
+    [0.75, 0.90, 0.50, 0.75],  // fly to end
+    [0.90, 1.00, 0.75, 0.75],  // parked at end
+  ];
+
+  for (const [sStart, sEnd, pStart, pEnd] of segments) {
+    if (scroll <= sEnd) {
+      const localT = Math.max(0, (scroll - sStart) / (sEnd - sStart));
+      // Smooth ease in/out for acceleration/deceleration feel
+      const eased = localT * localT * (3 - 2 * localT); // smoothstep
+      return pStart + eased * (pEnd - pStart);
+    }
+  }
+  return 0.75;
+}
+
 export default function JourneyRig() {
   const { camera, pointer } = useThree();
   const scrollProgress = useStore((state) => state.scrollProgress);
   const shipRef = useRef<THREE.Group>(null);
-  const idealCamera = useMemo(() => new THREE.Object3D(), []);
-  
-  // A single linear path going extremely deep into Z.
-  // We will place Portals along this path.
-  // 0: Start
-  // -100: Portal 1 (About)
-  // -200: Portal 2 (Experience)
-  // -300: Portal 3 (Projects)
-  // -400: End
+
+  // Pre-allocate ALL vectors/quaternions/matrices ONCE — zero GC pressure per frame.
+  const _targetPos = useMemo(() => new THREE.Vector3(), []);
+  const _tangent = useMemo(() => new THREE.Vector3(), []);
+  const _shipTarget = useMemo(() => new THREE.Vector3(), []);
+  const _lookAtPos = useMemo(() => new THREE.Vector3(), []);
+  const _cameraTarget = useMemo(() => new THREE.Vector3(), []);
+  const _cameraLookAt = useMemo(() => new THREE.Vector3(), []);
+  const _up = useMemo(() => new THREE.Vector3(0, 1, 0), []);
+  const _quat = useMemo(() => new THREE.Quaternion(), []);
+  const _mat = useMemo(() => new THREE.Matrix4(), []);
+
+  // The journey path
   const path = useMemo(() => {
     return new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, 0, 0),        
-      new THREE.Vector3(0, 0, -100),     
-      new THREE.Vector3(0, 0, -200),     
-      new THREE.Vector3(0, 0, -300),     
-      new THREE.Vector3(0, 0, -400),     
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(0, 0, -100),
+      new THREE.Vector3(0, 0, -200),
+      new THREE.Vector3(0, 0, -300),
+      new THREE.Vector3(0, 0, -400),
     ]);
   }, []);
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (!shipRef.current) return;
-    
-    // 1. Get position on curve based on scroll
-    // Scroll progress goes from 0 to 1
-    const t = Math.max(0.001, Math.min(0.999, scrollProgress));
-    
-    // 2. Calculate ideal spaceship position
-    const targetPos = path.getPointAt(t);
-    const tangent = path.getTangentAt(t);
-    
-    // Add mouse parallax to the ship so it banks and moves slightly
-    const parallaxX = pointer.x * 3;
-    const parallaxY = pointer.y * 1.5;
-    
-    const targetPositionWithParallax = new THREE.Vector3(
-      targetPos.x + parallaxX, 
-      targetPos.y + parallaxY, 
-      targetPos.z
-    );
-    
-    // Smoothly interpolate the ship to its position
-    shipRef.current.position.lerp(targetPositionWithParallax, 5 * delta);
-    
-    // Make ship point forward, plus banking based on pointer
-    const lookAtPos = targetPos.clone().add(tangent);
-    lookAtPos.x -= pointer.x * 10; // Bank into the turn when moving mouse
-    lookAtPos.y -= pointer.y * 5; 
-    
-    const idealQuaternion = new THREE.Quaternion().setFromRotationMatrix(
-      new THREE.Matrix4().lookAt(shipRef.current.position, lookAtPos, new THREE.Vector3(0, 1, 0))
-    );
-    
-    shipRef.current.quaternion.slerp(idealQuaternion, 5 * delta);
 
-    // 3. Camera dynamically chases the ship
-    // The camera follows from behind and slightly above
-    const cameraOffset = new THREE.Vector3(0, 1.5, 6); 
-    idealCamera.position.copy(shipRef.current.position).add(cameraOffset);
-    
-    // Smoothly interpolate the real camera to the ideal camera position
-    camera.position.lerp(idealCamera.position, 4 * delta);
-    
-    // Camera always looks slightly ahead of the ship
-    const cameraLookAt = shipRef.current.position.clone().add(new THREE.Vector3(0, 0, -20));
-    camera.lookAt(cameraLookAt);
+    // Convert scroll progress to path position using the parking waypoint map
+    const pathT = scrollToPathT(scrollProgress);
+    const t = Math.max(0.001, Math.min(0.999, pathT));
+
+    path.getPointAt(t, _targetPos);
+    path.getTangentAt(t, _tangent);
+
+    // Mouse parallax (reduced when parked for stability)
+    const px = pointer.x * 2;
+    const py = pointer.y * 1;
+
+    _shipTarget.set(_targetPos.x + px, _targetPos.y + py, _targetPos.z);
+    shipRef.current.position.lerp(_shipTarget, 5 * delta);
+
+    // Ship rotation
+    _lookAtPos.copy(_targetPos).add(_tangent);
+    _lookAtPos.x -= pointer.x * 8;
+    _lookAtPos.y -= pointer.y * 4;
+    _mat.lookAt(shipRef.current.position, _lookAtPos, _up);
+    _quat.setFromRotationMatrix(_mat);
+    shipRef.current.quaternion.slerp(_quat, 5 * delta);
+
+    // Camera chases the ship
+    _cameraTarget.copy(shipRef.current.position);
+    _cameraTarget.y += 1.5;
+    _cameraTarget.z += 6;
+    camera.position.lerp(_cameraTarget, 4 * delta);
+
+    _cameraLookAt.copy(shipRef.current.position);
+    _cameraLookAt.z -= 20;
+    camera.lookAt(_cameraLookAt);
   });
 
   return (
     <group ref={shipRef}>
-      {/* The spaceship model faces backward natively, so we rotate it 180 degrees */}
       <Spaceship rotation={[0, Math.PI, 0]} />
     </group>
   );

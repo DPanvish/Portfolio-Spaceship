@@ -1,85 +1,99 @@
 'use client';
 
 import { useStore } from '@/store/useStore';
-import { getAbout } from '@/lib/content';
 import { useEffect, useState } from 'react';
-import type { About } from '@/lib/content-types';
+import { motion, AnimatePresence } from 'framer-motion';
+
+async function getAbout() {
+  return {
+    headline: "Frontend Architect",
+    paragraph1: "Building high-performance, cinematic web experiences using React, Three.js, and WebGL.",
+    paragraph2: "Bridging the gap between design engineering and technical architecture.",
+    skills: ['React', 'Three.js', 'Next.js', 'Framer Motion', 'WebGL', 'GSAP']
+  };
+}
 
 export default function AboutOverlay() {
   const scrollProgress = useStore((state) => state.scrollProgress);
-  const [content, setContent] = useState<About | null>(null);
+  const [content, setContent] = useState<any>(null);
 
   useEffect(() => {
-    // In Phase 8, this will fetch from a real API/database.
-    // For now, it instantly resolves our mock data.
     getAbout().then(setContent);
   }, []);
 
-  // Waypoint 1 (About Portal) is at t = 0.25
-  // The ship crosses the threshold at exactly 0.25.
-  // We want the UI to violently appear AFTER we cross the threshold (e.g. 0.25 to 0.35)
-  // Let's make the center 0.30
-  const center = 0.30;
-  const spread = 0.05;
-  const distance = Math.abs(scrollProgress - center);
-  const opacity = Math.max(0, 1 - distance / spread);
+  // Ship is PARKED at Portal 1 during scroll [0.10 – 0.35].
+  // Fade in over [0.10 – 0.14], full opacity [0.14 – 0.31], fade out [0.31 – 0.35].
+  let opacity = 0;
+  if (scrollProgress >= 0.10 && scrollProgress <= 0.35) {
+    if (scrollProgress < 0.14) {
+      opacity = (scrollProgress - 0.10) / 0.04; // fade in
+    } else if (scrollProgress > 0.31) {
+      opacity = 1 - (scrollProgress - 0.31) / 0.04; // fade out
+    } else {
+      opacity = 1; // fully visible
+    }
+  }
 
-  // If completely invisible, don't render to save DOM updates
-  if (opacity === 0 || !content) return null;
+  if (!content) return null;
+
+  const isVisible = opacity > 0.01;
 
   return (
-    <div 
-      className="absolute inset-0 flex items-center justify-center pointer-events-none"
-      style={{ opacity }}
+    <div
+      className="absolute inset-0 pointer-events-none flex items-center justify-start p-12 md:p-24"
+      style={{
+        opacity,
+        zIndex: isVisible ? 10 : -1,
+      }}
     >
-      {/* Viewscreen Panel */}
-      <div 
-        className="relative w-full max-w-2xl p-8 mx-4 hud-container scanline bg-black/60 backdrop-blur-xl border border-cyan-500/50 pointer-events-auto shadow-[0_0_80px_rgba(0,240,255,0.15)]"
-        style={{
-          transform: `scale(${0.95 + opacity * 0.05}) translateY(${(1 - opacity) * 20}px)`,
-        }}
-      >
-        <div className="flex items-start gap-8 relative z-10">
-          {/* Avatar / Profile Frame */}
-          <div className="shrink-0 relative target-brackets p-1">
-            <div className="w-32 h-32 hud-container-alt overflow-hidden bg-cyan-950/30">
-              <img 
-                src={content.profilePhoto} 
-                alt="Profile"
-                className="w-full h-full object-cover mix-blend-luminosity hover:mix-blend-normal transition-all duration-500"
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            initial={{ x: -60, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -60, opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-2xl pointer-events-auto"
+          >
+            <div className="overlay-panel p-8 relative">
+              {/* Accent line */}
+              <motion.div
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.8, delay: 0.1, ease: "circOut" }}
+                className="h-px bg-cyan-500/40 mb-8 origin-left"
               />
-            </div>
-            {/* Absolute positioning decor */}
-            <div className="absolute top-0 right-0 w-2 h-8 bg-cyan-500/20" />
-            <div className="absolute bottom-0 left-0 w-8 h-2 bg-cyan-500/20" />
-          </div>
 
-          {/* Content */}
-          <div className="flex-1">
-            <p className="text-cyan-400 font-mono text-xs mb-2 tracking-[0.2em] uppercase blinking-cursor">
-              {"// Subject Database"}
-            </p>
-            <h2 className="text-4xl font-mono font-bold text-white mb-6 uppercase tracking-wider">
-              {content.headline}
-            </h2>
-            
-            <div className="space-y-4 text-gray-300 leading-relaxed text-sm font-light">
-              <p>{content.bio}</p>
-            </div>
+              <p className="text-cyan-400/80 font-mono text-xs tracking-[0.3em] uppercase mb-3">
+                {"// About"}
+              </p>
 
-            <div className="mt-8 flex gap-4">
-              <a 
-                href={content.resumeUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-interactive hover-blur-transition px-8 py-3 hud-container-alt border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-black font-mono text-sm tracking-widest uppercase inline-block shadow-[inset_0_0_20px_rgba(0,240,255,0.2)]"
-              >
-                [ Download_Dossier ]
-              </a>
+              <h2 className="text-4xl md:text-5xl font-sans font-bold text-white mb-6 tracking-tight leading-tight">
+                {content.headline}
+              </h2>
+
+              <div className="space-y-4 text-white/60 text-base md:text-lg leading-relaxed">
+                <p>{content.paragraph1}</p>
+                <p>{content.paragraph2}</p>
+              </div>
+
+              <div className="mt-8 flex flex-wrap gap-2">
+                {content.skills.map((skill: string, i: number) => (
+                  <motion.span
+                    key={skill}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 + i * 0.06 }}
+                    className="px-3 py-1.5 border border-white/10 bg-white/5 text-white/70 font-mono text-xs uppercase tracking-wider"
+                  >
+                    {skill}
+                  </motion.span>
+                ))}
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

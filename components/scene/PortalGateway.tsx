@@ -3,7 +3,7 @@
 import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
-import { MeshPortalMaterial, Text } from '@react-three/drei';
+import { Text } from '@react-three/drei';
 
 interface PortalGatewayProps {
   position: [number, number, number];
@@ -11,82 +11,74 @@ interface PortalGatewayProps {
   label: string;
 }
 
+// A lightweight portal gateway — NO MeshPortalMaterial (too expensive, causes extra render passes).
+// Instead we use simple glowing torus rings + bloom to create the portal illusion.
 export default function PortalGateway({ position, color, label }: PortalGatewayProps) {
-  const portalRef = useRef<any>(null);
-  const groupRef = useRef<THREE.Group>(null);
-  
-  // Subtle floating animation for the portal
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime) * 0.5;
-      groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.5) * 0.05;
+  const outerRingRef = useRef<THREE.Mesh>(null);
+  const midRingRef = useRef<THREE.Mesh>(null);
+  const innerRingRef = useRef<THREE.Mesh>(null);
+
+  useFrame((state, delta) => {
+    const t = state.clock.elapsedTime;
+    // Spin each ring on a different axis for a gyroscopic look
+    if (outerRingRef.current) {
+      outerRingRef.current.rotation.x += delta * 0.3;
+      outerRingRef.current.rotation.y += delta * 0.15;
+    }
+    if (midRingRef.current) {
+      midRingRef.current.rotation.y -= delta * 0.25;
+      midRingRef.current.rotation.z += delta * 0.2;
+    }
+    if (innerRingRef.current) {
+      innerRingRef.current.rotation.x -= delta * 0.15;
+      innerRingRef.current.rotation.z -= delta * 0.35;
     }
   });
 
-  // Memoize random particle positions to satisfy react-hooks/purity
-  const particles = useMemo(() => {
-    return [...Array(50)].map(() => [
-      (Math.random() - 0.5) * 50,
-      (Math.random() - 0.5) * 50,
-      -Math.random() * 50
-    ] as [number, number, number]);
-  }, []);
-
   return (
-    <group position={position} ref={groupRef}>
-      {/* The Portal Frame (Outer glowing ring) */}
-      <mesh>
-        <torusGeometry args={[8, 0.4, 16, 64]} />
+    <group position={position}>
+      {/* Outer spinning ring */}
+      <mesh ref={outerRingRef}>
+        <torusGeometry args={[10, 0.08, 16, 80]} />
+        <meshBasicMaterial color={color} transparent opacity={0.4} />
+      </mesh>
+
+      {/* Mid spinning ring */}
+      <mesh ref={midRingRef}>
+        <torusGeometry args={[9, 0.12, 16, 80]} />
+        <meshBasicMaterial color={color} transparent opacity={0.6} />
+      </mesh>
+
+      {/* Inner solid ring — the actual portal frame. toneMapped={false} makes it bloom. */}
+      <mesh ref={innerRingRef}>
+        <torusGeometry args={[8, 0.25, 24, 80]} />
         <meshBasicMaterial color={color} toneMapped={false} />
       </mesh>
-      
-      {/* Outer Glow */}
+
+      {/* Center glow disc — a simple transparent circle to suggest the "gateway" */}
       <mesh>
-        <torusGeometry args={[8, 0.8, 16, 64]} />
-        <meshBasicMaterial color={color} transparent opacity={0.2} toneMapped={false} blending={THREE.AdditiveBlending} />
+        <circleGeometry args={[7.5, 64]} />
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={0.04}
+          side={THREE.DoubleSide}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
       </mesh>
 
-      {/* Label Text */}
+      {/* Label */}
       <Text
-        position={[0, 9, 0]}
-        fontSize={1.5}
+        position={[0, 12, 0]}
+        fontSize={1.8}
         color={color}
         anchorX="center"
         anchorY="middle"
-        characters="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        font="https://fonts.gstatic.com/s/sharetechmono/v15/J7aHnp1uDqi1QNTZpo6mTRtMwO0H9_A.woff"
+        letterSpacing={0.3}
       >
         {label}
       </Text>
-
-      {/* The Actual Portal Content (Using MeshPortalMaterial) */}
-      <mesh>
-        {/* Fill the inner circle of the torus */}
-        <circleGeometry args={[7.8, 64]} />
-        <MeshPortalMaterial ref={portalRef} side={THREE.DoubleSide} blend={0.1}>
-          {/* Inside the Portal - a different colored sky/environment */}
-          <color attach="background" args={['#050510']} />
-          <ambientLight intensity={1} />
-          
-          {/* A cool grid or abstract geometry inside the portal to show depth */}
-          <group position={[0, 0, -20]}>
-            <mesh>
-              <icosahedronGeometry args={[15, 1]} />
-              <meshBasicMaterial color={color} wireframe />
-            </mesh>
-          </group>
-          
-          {/* Inner particles/stars just for this dimension */}
-          <group position={[0, 0, -10]}>
-             {particles.map((pos, i) => (
-                <mesh key={i} position={pos}>
-                  <sphereGeometry args={[0.2, 4, 4]} />
-                  <meshBasicMaterial color={color} />
-                </mesh>
-             ))}
-          </group>
-        </MeshPortalMaterial>
-      </mesh>
     </group>
   );
 }
