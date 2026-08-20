@@ -1,70 +1,150 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useStore } from '@/store/useStore';
+import Lenis from 'lenis';
 
-// Register ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
 
+/**
+ * ScrollProvider — with Lenis + GSAP synchronization for buttery smooth scroll.
+ */
 export default function ScrollProvider({ children }: { children: React.ReactNode }) {
-  const setScrollProgress = useStore((state) => state.setScrollProgress);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Setup Lenis and sync with GSAP
   useEffect(() => {
-    // Initialize Lenis for buttery smooth scrolling
     const lenis = new Lenis({
-      duration: 1.5,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // standard exponential ease-out
-      smoothWheel: true,
+      lerp: 0.08, // Adjust for smoothness (lower = smoother/slower, higher = snappier)
       wheelMultiplier: 1,
-      touchMultiplier: 2,
+      autoResize: true,
     });
 
-    // Update Lenis on every frame
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
-    // Sync Lenis with GSAP ScrollTrigger
+    // Synchronize Lenis scroll with GSAP's ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
+
+    // Use GSAP's ticker to drive Lenis's requestAnimationFrame
     gsap.ticker.add((time) => {
       lenis.raf(time * 1000);
     });
-    gsap.ticker.lagSmoothing(0, 0);
 
-    // Create a master ScrollTrigger that spans the entire page
-    // and updates our global Zustand store with the progress (0 to 1).
-    const st = ScrollTrigger.create({
-      trigger: containerRef.current,
-      start: 'top top',
-      end: 'bottom bottom',
-      scrub: true,
-      onUpdate: (self) => {
-        setScrollProgress(self.progress);
-      },
-    });
+    // Disable lag smoothing in GSAP to prevent weird jumps
+    gsap.ticker.lagSmoothing(0);
 
     return () => {
-      st.kill();
       lenis.destroy();
-      gsap.ticker.remove(lenis.raf);
+      gsap.ticker.remove((time) => {
+        lenis.raf(time * 1000);
+      });
     };
-  }, [setScrollProgress]);
+  }, []);
+
+  // Setup scroll-triggered reveal animations
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Animate all .reveal-up elements when they enter the viewport
+      gsap.utils.toArray<HTMLElement>('.reveal-up').forEach((el) => {
+        gsap.to(el, {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            once: true,
+          },
+        });
+      });
+
+      // Animate all .reveal-left elements
+      gsap.utils.toArray<HTMLElement>('.reveal-left').forEach((el) => {
+        gsap.to(el, {
+          opacity: 1,
+          x: 0,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            once: true,
+          },
+        });
+      });
+
+      // Animate all .reveal-right elements
+      gsap.utils.toArray<HTMLElement>('.reveal-right').forEach((el) => {
+        gsap.to(el, {
+          opacity: 1,
+          x: 0,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            once: true,
+          },
+        });
+      });
+
+      // Animate all .reveal-scale elements
+      gsap.utils.toArray<HTMLElement>('.reveal-scale').forEach((el) => {
+        gsap.to(el, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            once: true,
+          },
+        });
+      });
+
+      // Animate .line elements (width expansion)
+      gsap.utils.toArray<HTMLElement>('.line').forEach((el) => {
+        gsap.to(el, {
+          width: '100%',
+          duration: 1.2,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 90%',
+            once: true,
+          },
+        });
+      });
+
+      // Stagger animations for groups
+      gsap.utils.toArray<HTMLElement>('.stagger-group').forEach((group) => {
+        const items = group.querySelectorAll('.stagger-item');
+        gsap.fromTo(
+          items,
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            stagger: 0.06,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: group,
+              start: 'top 85%',
+              once: true,
+            },
+          }
+        );
+      });
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
-    // We add a massive height to the container so we have something to scroll.
-    // The height determines how long the journey takes to scroll through.
-    // 600vh means 6 viewport heights of scrolling.
-    <div ref={containerRef} className="w-full relative" style={{ height: '600vh' }}>
-      {/* The children (the Canvas + Overlays) are fixed to the viewport */}
-      <div className="fixed inset-0 w-full h-full overflow-hidden">
-        {children}
-      </div>
+    <div ref={containerRef}>
+      {children}
     </div>
   );
 }

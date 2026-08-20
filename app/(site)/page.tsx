@@ -1,16 +1,30 @@
-import SceneCanvas from '@/components/scene/SceneCanvas';
-
-// This is a Server Component — only SceneCanvas (Client) renders the 3D world.
-// The outer div is the full-screen container; the Canvas mounts inside it.
+import HeroSection from '@/components/sections/HeroSection';
+import AboutSection from '@/components/sections/AboutSection';
+import ExperienceSection from '@/components/sections/ExperienceSection';
+import ProjectsSection from '@/components/sections/ProjectsSection';
+import ContactSection from '@/components/sections/ContactSection';
+import CustomCursor from '@/components/ui/CustomCursor';
+import FloatingNav from '@/components/ui/FloatingNav';
+import FilmGrain from '@/components/ui/FilmGrain';
+import Marquee from '@/components/ui/Marquee';
+import ScrollProgress from '@/components/ui/ScrollProgress';
 
 export default function SitePage() {
   return (
-    // This div fills the fixed inset-0 viewport provided by ScrollProvider
-    <div className="w-full h-full bg-black">
-      <SceneCanvas />
-
-      {/* HUD overlays are layered above the canvas via absolute positioning */}
-      {/* Content overlays added in Phase 4 */}
-    </div>
+    <main>
+      <FilmGrain />
+      <ScrollProgress />
+      <CustomCursor />
+      <FloatingNav />
+      
+      <HeroSection />
+      
+      <Marquee text="CREATIVE DEVELOPER • DESIGN ENGINEER • 3D ARTIST • " speed={45} />
+      
+      <AboutSection />
+      <ProjectsSection />
+      <ExperienceSection />
+      <ContactSection />
+    </main>
   );
 }

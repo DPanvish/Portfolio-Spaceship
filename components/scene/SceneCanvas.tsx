@@ -1,55 +1,38 @@
 'use client';
 
+import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Preload, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
-import { Suspense } from 'react';
 import * as THREE from 'three';
 import SceneLights from './SceneLights';
-import SpaceBackground from './SpaceBackground';
 import Spaceship from './Spaceship';
-import PlanetWaypoint from './PlanetWaypoint';
-import CameraRig from './CameraRig';
-
-// SceneCanvas is a Client Component — Three.js requires browser APIs.
-// It fills the full viewport and will house the entire spaceship journey.
 
 export default function SceneCanvas() {
   return (
     <Canvas
       id="spaceship-canvas"
       camera={{
-        fov: 55,
+        fov: 45,
         near: 0.1,
-        far: 1000,
-        position: [0, 1.5, 6],
+        far: 100,
+        position: [0, 0.5, 5],
       }}
       gl={{
         antialias: true,
-        alpha: false,
+        alpha: true,
         powerPreference: 'high-performance',
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 1.1,
+        toneMappingExposure: 1.2,
       }}
-      style={{ position: 'absolute', inset: 0 }}
-      dpr={[1, 2]}
+      style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+      dpr={[1, 1.5]}
     >
-      {/* Suspense boundary: children load async; fallback is the dark void */}
       <Suspense fallback={null}>
-        <CameraRig />
         <SceneLights />
-        <SpaceBackground />
-
-        {/* The player's ship — positioned center-front, rotated to face away */}
-        <Spaceship position={[0, -0.3, 0] as const} rotation={[0, Math.PI, 0] as const} />
-
-        {/* First waypoint — a blue planet in the distance */}
-        <PlanetWaypoint position={[0, -2, -25] as const} color="#4488ff" />
-
-        {/* Preload warms up all assets in the Suspense subtree */}
+        <Spaceship position={[0, -0.3, 0]} rotation={[0, Math.PI, 0]} />
         <Preload all />
       </Suspense>
 
-      {/* Adaptive performance — reduces pixel ratio when FPS drops */}
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
     </Canvas>

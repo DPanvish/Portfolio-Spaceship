@@ -1,56 +1,213 @@
 @import "tailwindcss";
 
-/* ─── Design Tokens ─────────────────────────────────────── */
+/* ─── Design Tokens (Space Portfolio) ──────────────────── */
 :root {
-  --color-space:      #00000;
-  --color-accent:     #00f0ff;   /* cyan — cockpit HUD colour */
-  --color-accent-dim: #00f0ff33;
-  --color-panel:      rgba(6, 10, 20, 0.75);
-  --color-text:       #e8eaf0;
+  --color-bg:         #000000;
+  --color-surface:    #0a0a0f;
+  --color-border:     rgba(255, 255, 255, 0.06);
+  --color-text:       #f0f0f5;
   --color-text-dim:   #6b7280;
+  --color-accent:     #00f0ff;
+  --color-accent-dim: rgba(0, 240, 255, 0.12);
 
-  --font-sans: var(--font-outfit);
-  --font-mono: ui-monospace, "JetBrains Mono", monospace;
+  /* Emil Kowalski easings */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 @theme inline {
   --color-background: #000000;
-  --color-foreground: var(--color-text);
+  --color-foreground: #f0f0f5;
   --font-sans: var(--font-outfit);
+  --font-mono: var(--font-tech), ui-monospace, SFMono-Regular, monospace;
 }
 
-/* ─── Reset / Base ──────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+/* ─── Reset ────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
 }
 
-html,
 body {
   margin: 0;
   padding: 0;
-  min-height: 100vh;
-  background: #000000;
-  color: var(--color-text);
-  font-family: var(--font-sans, sans-serif);
-  overflow-x: hidden;
-}
-
-/* ─── Scrollbar ─────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
   background: #000;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-accent-dim);
-  border-radius: 2px;
+  color: var(--color-text);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── Focus ring ────────────────────────────────────────── */
+/* ─── Scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* ─── Focus ────────────────────────────────────────────── */
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/* ─── Sections ─────────────────────────────────────────── */
+.section {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* ─── Typography ───────────────────────────────────────── */
+.display-heading {
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+}
+
+.section-label {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  opacity: 0.7;
+}
+
+/* ─── Reveal animations (GSAP targets) ─────────────────── */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* ─── Buttons (Emil Kowalski) ──────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: var(--font-mono, monospace);
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out),
+              background-color 200ms ease,
+              border-color 200ms ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: var(--color-accent-dim);
+    border-color: rgba(0, 240, 255, 0.3);
+  }
+}
+
+/* ─── Divider line ─────────────────────────────────────── */
+.line {
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-accent), transparent);
+}
+
+/* ─── Star background (CSS only) ──────────────────────── */
+.stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 30% 70%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 50% 40%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 15% 90%, rgba(255,255,255,0.2), transparent),
+    radial-gradient(1px 1px at 85% 50%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1.5px 1.5px at 25% 30%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1.5px 1.5px at 75% 60%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 45% 15%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 65% 95%, rgba(255,255,255,0.2), transparent),
+    radial-gradient(1px 1px at 5% 55%, rgba(255,255,255,0.3), transparent);
+}
+
+/* ─── Skill tag ────────────────────────────────────────── */
+.skill-tag {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  border: 1px solid var(--color-border);
+  background: rgba(255,255,255,0.02);
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .skill-tag:hover {
+    background: var(--color-accent-dim);
+    border-color: rgba(0, 240, 255, 0.2);
+    color: var(--color-accent);
+  }
+}
+
+/* ─── Timeline ─────────────────────────────────────────── */
+.timeline-item {
+  position: relative;
+  padding-left: 1.5rem;
+  border-left: 1px solid rgba(255,255,255,0.06);
+  transition: border-color 300ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .timeline-item:hover {
+    border-color: rgba(0, 240, 255, 0.3);
+  }
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -4px;
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+}
+
+/* ─── Reduced motion ───────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up, .reveal-left, .reveal-right, .reveal-scale {
+    opacity: 1;
+    transform: none;
+  }
+  html { scroll-behavior: auto; }
 }
