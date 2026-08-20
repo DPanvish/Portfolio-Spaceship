@@ -1,5 +1,7 @@
 'use client';
 
+import TextScramble from '@/components/ui/TextScramble';
+
 const experiences = [
   {
     id: '1',
@@ -31,7 +33,7 @@ export default function ExperienceSection() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-16 lg:gap-24">
           {/* Left — heading */}
           <div className="flex flex-col gap-6">
-            <p className="section-label reveal-up">{"// Experience"}</p>
+            <TextScramble text="// EXPERIENCE" className="section-label" />
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[0.95] reveal-up">
               Work<br />
               <span className="text-white/40">History</span>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState } from 'react';
+import TextScramble from '@/components/ui/TextScramble';
 
 const skills = ['React', 'Three.js', 'Next.js', 'TypeScript', 'Framer Motion', 'WebGL', 'GSAP', 'Node.js'];
 
@@ -52,7 +53,7 @@ export default function AboutSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
           {/* Left column */}
           <div className="flex flex-col gap-8">
-            <p className="section-label reveal-up">{"// About"}</p>
+            <TextScramble text="// ABOUT" className="section-label" />
 
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[0.95] reveal-up" data-cursor="grow">
               Frontend<br />

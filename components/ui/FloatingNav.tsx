@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 
 const NAV_LINKS = [
   { name: 'About', href: '#about' },
-  { name: 'Experience', href: '#experience' },
   { name: 'Projects', href: '#projects' },
+  { name: 'Experience', href: '#experience' },
+  { name: 'Contact', href: '#contact' },
 ];
 
 export default function FloatingNav() {

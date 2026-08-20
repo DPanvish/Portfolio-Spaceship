@@ -3,6 +3,7 @@
 import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import SceneCanvas from '@/components/scene/SceneCanvas';
+import TextScramble from '@/components/ui/TextScramble';
 
 export default function HeroSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -114,9 +115,7 @@ export default function HeroSection() {
         data-parallax="text"
       >
         <div ref={contentRef} className="flex flex-col gap-6 max-w-3xl">
-          <p className="section-label hero-fade" style={{ opacity: 0 }}>
-            {"// Mission Control"}
-          </p>
+          <TextScramble text="// MISSION CONTROL" className="section-label hero-fade" delay={200} />
 
           <h1
             ref={headingRef}

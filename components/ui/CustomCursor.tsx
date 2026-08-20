@@ -1,120 +1,150 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export default function CustomCursor() {
-  const cursorRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
+  const dotRef = useRef<HTMLDivElement>(null);
   const [isFinePointer, setIsFinePointer] = useState(false);
 
   useEffect(() => {
-    // Check if the device has a fine pointer (like a mouse)
-    const mediaQuery = window.matchMedia('(pointer: fine)');
-    setIsFinePointer(mediaQuery.matches);
+    const mq = window.matchMedia('(pointer: fine)');
+    setIsFinePointer(mq.matches);
 
-    const handleMediaChange = (e: MediaQueryListEvent) => {
-      setIsFinePointer(e.matches);
-    };
-    
-    mediaQuery.addEventListener('change', handleMediaChange);
-    
-    return () => {
-      mediaQuery.removeEventListener('change', handleMediaChange);
-    };
+    const handler = (e: MediaQueryListEvent) => setIsFinePointer(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
   }, []);
 
   useEffect(() => {
-    if (!isFinePointer || !cursorRef.current) return;
+    if (!isFinePointer) return;
 
+    // Add cursor: none globally
+    const style = document.createElement('style');
+    style.innerHTML = '* { cursor: none !important; }';
+    document.head.appendChild(style);
+
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    
     let isHovering = false;
-    let isBlendMode = false;
+    let targetElement: Element | null = null;
+    let rAF: number;
 
     const onMouseMove = (e: MouseEvent) => {
-      if (cursorRef.current) {
-        const x = e.clientX;
-        const y = e.clientY;
-        
-        let scale = 1;
-        let opacity = 1;
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      
+      if (dotRef.current) {
+        dotRef.current.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+      }
 
+      // Check hover
+      const el = document.elementFromPoint(mouseX, mouseY);
+      const magneticEl = el?.closest('[data-cursor="grow"]');
+      
+      if (magneticEl) {
+        if (!isHovering) {
+          isHovering = true;
+          if (ringRef.current) {
+            ringRef.current.style.width = '60px';
+            ringRef.current.style.height = '60px';
+            ringRef.current.style.opacity = '0.5';
+            ringRef.current.style.borderColor = '#00f0ff';
+          }
+        }
+        targetElement = magneticEl;
+      } else {
         if (isHovering) {
-          scale = 4; // 12px * 4 = 48px
-          opacity = 0.5;
-        }
-        
-        // Use translate3d for better performance
-        cursorRef.current.style.transform = `translate3d(${x - 6}px, ${y - 6}px, 0) scale(${scale})`;
-        cursorRef.current.style.opacity = opacity.toString();
-        
-        if (isBlendMode) {
-          cursorRef.current.style.mixBlendMode = 'difference';
-        } else {
-          cursorRef.current.style.mixBlendMode = 'normal';
+          isHovering = false;
+          targetElement = null;
+          if (ringRef.current) {
+            ringRef.current.style.width = '32px';
+            ringRef.current.style.height = '32px';
+            ringRef.current.style.opacity = '1';
+            ringRef.current.style.borderColor = 'white';
+          }
         }
       }
     };
+    
+    const update = () => {
+      let targetX = mouseX;
+      let targetY = mouseY;
 
-    const onMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      
-      // Check for data-cursor='grow'
-      const growElement = target.closest('[data-cursor="grow"]');
-      if (growElement) {
-        isHovering = true;
+      if (isHovering && targetElement) {
+        const rect = targetElement.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        const distX = centerX - mouseX;
+        const distY = centerY - mouseY;
+        
+        targetX = mouseX + distX * 0.3;
+        targetY = mouseY + distY * 0.3;
+      }
+
+      if (ringRef.current) {
+        ringRef.current.style.transform = `translate3d(${targetX}px, ${targetY}px, 0) translate(-50%, -50%)`;
       }
       
-      // Check for links or buttons
-      const linkElement = target.closest('a, button');
-      if (linkElement) {
-        isBlendMode = true;
-      }
+      rAF = requestAnimationFrame(update);
     };
 
-    const onMouseOut = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      
-      const growElement = target.closest('[data-cursor="grow"]');
-      if (growElement) {
-        isHovering = false;
-      }
-      
-      const linkElement = target.closest('a, button');
-      if (linkElement) {
-        isBlendMode = false;
-      }
-    };
-
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
-    document.addEventListener('mouseover', onMouseOver, { passive: true });
-    document.addEventListener('mouseout', onMouseOut, { passive: true });
+    window.addEventListener('pointermove', onMouseMove, { passive: true });
+    rAF = requestAnimationFrame(update);
+    
+    // Initial dot pos
+    if (dotRef.current) {
+       dotRef.current.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+    }
 
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseover', onMouseOver);
-      document.removeEventListener('mouseout', onMouseOut);
+      window.removeEventListener('pointermove', onMouseMove);
+      cancelAnimationFrame(rAF);
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
     };
   }, [isFinePointer]);
 
   if (!isFinePointer) return null;
 
   return (
-    <div
-      ref={cursorRef}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '12px',
-        height: '12px',
-        backgroundColor: '#fff',
-        borderRadius: '50%',
-        pointerEvents: 'none',
-        zIndex: 9999,
-        // Emil Kowalski's animation philosophy: only animate transform + opacity
-        // Using cubic-bezier(0.23, 1, 0.32, 1) for ease-out
-        transition: 'transform 80ms cubic-bezier(0.23, 1, 0.32, 1), opacity 80ms cubic-bezier(0.23, 1, 0.32, 1), mix-blend-mode 80ms step-end',
-        transformOrigin: 'center center',
-        willChange: 'transform, opacity',
-      }}
-    />
+    <>
+      <div
+        ref={ringRef}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '32px',
+          height: '32px',
+          border: '1.5px solid white',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+          zIndex: 9999,
+          transition: 'width 120ms cubic-bezier(0.23, 1, 0.32, 1), height 120ms cubic-bezier(0.23, 1, 0.32, 1), opacity 120ms cubic-bezier(0.23, 1, 0.32, 1), border-color 120ms cubic-bezier(0.23, 1, 0.32, 1), transform 120ms cubic-bezier(0.23, 1, 0.32, 1)',
+          transform: 'translate(-50%, -50%)',
+          willChange: 'transform, width, height'
+        }}
+      />
+      <div
+        ref={dotRef}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '5px',
+          height: '5px',
+          backgroundColor: 'white',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+          zIndex: 9999,
+          transform: 'translate(-50%, -50%)',
+          willChange: 'transform'
+        }}
+      />
+    </>
   );
 }
