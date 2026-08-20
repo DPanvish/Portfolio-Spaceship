@@ -3,18 +3,44 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
 /**
- * ScrollProvider — NO Lenis. Just GSAP ScrollTrigger with native browser scroll.
- * Lenis was causing the "stuck" issue by conflicting with ScrollTrigger's RAF loop.
- *
- * This provider sets up scroll-triggered reveal animations for all .reveal-* elements.
+ * ScrollProvider — with Lenis + GSAP synchronization for buttery smooth scroll.
  */
 export default function ScrollProvider({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Setup Lenis and sync with GSAP
+  useEffect(() => {
+    const lenis = new Lenis({
+      lerp: 0.08, // Adjust for smoothness (lower = smoother/slower, higher = snappier)
+      wheelMultiplier: 1,
+      autoResize: true,
+    });
+
+    // Synchronize Lenis scroll with GSAP's ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update);
+
+    // Use GSAP's ticker to drive Lenis's requestAnimationFrame
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+
+    // Disable lag smoothing in GSAP to prevent weird jumps
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      lenis.destroy();
+      gsap.ticker.remove((time) => {
+        lenis.raf(time * 1000);
+      });
+    };
+  }, []);
+
+  // Setup scroll-triggered reveal animations
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Animate all .reveal-up elements when they enter the viewport

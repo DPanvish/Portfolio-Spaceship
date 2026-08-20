@@ -42,7 +42,7 @@ export default function ProjectsSection() {
 
   return (
     <section ref={sectionRef} id="projects" className="h-screen w-full overflow-hidden relative">
-      <div ref={scrollContainerRef} className="flex h-full w-max flex-nowrap items-center px-6 md:px-16 gap-10 md:gap-16">
+      <div ref={scrollContainerRef} className="flex h-full w-max flex-nowrap items-center px-6 md:px-16 gap-10 md:gap-16 will-change-transform" style={{ transform: 'translateZ(0)' }}>
 
         {/* Heading Card */}
         <div className="w-[80vw] md:w-[35vw] flex-shrink-0 flex flex-col justify-center gap-6">

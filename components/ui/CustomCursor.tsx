@@ -30,6 +30,8 @@ export default function CustomCursor() {
     let isHovering = false;
     let targetElement: Element | null = null;
     let rAF: number;
+    let ringX = mouseX;
+    let ringY = mouseY;
 
     const onMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
@@ -38,73 +40,69 @@ export default function CustomCursor() {
       if (dotRef.current) {
         dotRef.current.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
       }
+    };
 
-      // Check hover
-      const el = document.elementFromPoint(mouseX, mouseY);
-      const magneticEl = el?.closest('[data-cursor="grow"]');
+    // Use event delegation for hover states instead of expensive elementFromPoint!
+    const onMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const magneticEl = target.closest('[data-cursor="grow"]');
       
       if (magneticEl) {
-        if (!isHovering) {
-          isHovering = true;
-          if (ringRef.current) {
-            ringRef.current.style.width = '60px';
-            ringRef.current.style.height = '60px';
-            ringRef.current.style.opacity = '0.5';
-            ringRef.current.style.borderColor = '#00f0ff';
-          }
-        }
+        isHovering = true;
         targetElement = magneticEl;
-      } else {
-        if (isHovering) {
-          isHovering = false;
-          targetElement = null;
-          if (ringRef.current) {
-            ringRef.current.style.width = '32px';
-            ringRef.current.style.height = '32px';
-            ringRef.current.style.opacity = '1';
-            ringRef.current.style.borderColor = 'white';
-          }
+        if (ringRef.current) {
+          ringRef.current.style.width = '60px';
+          ringRef.current.style.height = '60px';
+          ringRef.current.style.opacity = '0.5';
+          ringRef.current.style.borderColor = '#00f0ff';
+        }
+      } else if (isHovering) {
+        isHovering = false;
+        targetElement = null;
+        if (ringRef.current) {
+          ringRef.current.style.width = '32px';
+          ringRef.current.style.height = '32px';
+          ringRef.current.style.opacity = '1';
+          ringRef.current.style.borderColor = 'white';
         }
       }
     };
-    
-    const update = () => {
+
+    const loop = () => {
       let targetX = mouseX;
       let targetY = mouseY;
 
       if (isHovering && targetElement) {
+        // Magnetic pull
         const rect = targetElement.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
         
-        const distX = centerX - mouseX;
-        const distY = centerY - mouseY;
-        
-        targetX = mouseX + distX * 0.3;
-        targetY = mouseY + distY * 0.3;
+        targetX = mouseX + (centerX - mouseX) * 0.3;
+        targetY = mouseY + (centerY - mouseY) * 0.3;
       }
+
+      // Smooth follow for the ring
+      ringX += (targetX - ringX) * 0.2;
+      ringY += (targetY - ringY) * 0.2;
 
       if (ringRef.current) {
-        ringRef.current.style.transform = `translate3d(${targetX}px, ${targetY}px, 0) translate(-50%, -50%)`;
+        ringRef.current.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
       }
-      
-      rAF = requestAnimationFrame(update);
+
+      rAF = requestAnimationFrame(loop);
     };
 
-    window.addEventListener('pointermove', onMouseMove, { passive: true });
-    rAF = requestAnimationFrame(update);
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    window.addEventListener('mouseover', onMouseOver, { passive: true });
     
-    // Initial dot pos
-    if (dotRef.current) {
-       dotRef.current.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
-    }
+    rAF = requestAnimationFrame(loop);
 
     return () => {
-      window.removeEventListener('pointermove', onMouseMove);
+      document.head.removeChild(style);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseover', onMouseOver);
       cancelAnimationFrame(rAF);
-      if (document.head.contains(style)) {
-        document.head.removeChild(style);
-      }
     };
   }, [isFinePointer]);
 
@@ -112,6 +110,7 @@ export default function CustomCursor() {
 
   return (
     <>
+      {/* Outer Ring */}
       <div
         ref={ringRef}
         style={{
@@ -124,11 +123,12 @@ export default function CustomCursor() {
           borderRadius: '50%',
           pointerEvents: 'none',
           zIndex: 9999,
-          transition: 'width 120ms cubic-bezier(0.23, 1, 0.32, 1), height 120ms cubic-bezier(0.23, 1, 0.32, 1), opacity 120ms cubic-bezier(0.23, 1, 0.32, 1), border-color 120ms cubic-bezier(0.23, 1, 0.32, 1), transform 120ms cubic-bezier(0.23, 1, 0.32, 1)',
+          transition: 'width 200ms cubic-bezier(0.23, 1, 0.32, 1), height 200ms cubic-bezier(0.23, 1, 0.32, 1), border-color 200ms ease, opacity 200ms ease',
           transform: 'translate(-50%, -50%)',
           willChange: 'transform, width, height'
         }}
       />
+      {/* Inner Dot */}
       <div
         ref={dotRef}
         style={{
