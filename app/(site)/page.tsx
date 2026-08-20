@@ -3,6 +3,7 @@ import AboutSection from '@/components/sections/AboutSection';
 import ExperienceSection from '@/components/sections/ExperienceSection';
 import ProjectsSection from '@/components/sections/ProjectsSection';
 import ContactSection from '@/components/sections/ContactSection';
+import Footer from '@/components/sections/Footer';
 import CustomCursor from '@/components/ui/CustomCursor';
 import FloatingNav from '@/components/ui/FloatingNav';
 import FilmGrain from '@/components/ui/FilmGrain';
@@ -25,6 +26,7 @@ export default function SitePage() {
       <ProjectsSection />
       <ExperienceSection />
       <ContactSection />
+      <Footer />
     </main>
   );
 }
