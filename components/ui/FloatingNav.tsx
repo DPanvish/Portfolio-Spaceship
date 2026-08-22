@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSoundStore } from '@/store/useSoundStore';
 
 const NAV_LINKS = [
   { name: 'About', href: '#about' },
@@ -12,6 +13,7 @@ const NAV_LINKS = [
 export default function FloatingNav() {
   const [isVisible, setIsVisible] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const { isMuted, toggleMute } = useSoundStore();
 
   useEffect(() => {
     // Scroll listener for visibility
@@ -112,6 +114,28 @@ export default function FloatingNav() {
             </a>
           );
         })}
+
+        {/* Sound Toggle */}
+        <button
+          onClick={toggleMute}
+          className="nav-link flex items-center ml-2 border-l border-white/10 pl-4"
+          style={{
+            fontFamily: 'monospace',
+            fontSize: '0.75rem',
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '0',
+            marginLeft: '0.5rem',
+            paddingLeft: '1.5rem',
+            borderLeft: '1px solid rgba(255,255,255,0.1)'
+          }}
+          data-cursor="grow"
+        >
+          {isMuted ? 'SOUND: OFF' : 'SOUND: ON'}
+        </button>
       </nav>
     </>
   );

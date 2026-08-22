@@ -20,11 +20,15 @@ export const metadata: Metadata = {
   description: "An interactive 3D portfolio",
 };
 
+import SoundProvider from '@/components/providers/SoundProvider';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${spaceMono.variable}`}>
       <body className="min-h-full bg-black text-white antialiased">
-        {children}
+        <SoundProvider>
+          {children}
+        </SoundProvider>
       </body>
     </html>
   );
