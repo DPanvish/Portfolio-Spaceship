@@ -5,16 +5,19 @@ import React, { useEffect, useRef, useState } from 'react';
 export default function CustomCursor() {
   const ringRef = useRef<HTMLDivElement>(null);
   const dotRef = useRef<HTMLDivElement>(null);
-  const [isFinePointer, setIsFinePointer] = useState(false);
+  const [isFinePointer, setIsFinePointer] = useState(true);
 
   useEffect(() => {
     const mq = window.matchMedia('(pointer: fine)');
-    setIsFinePointer(mq.matches);
+    
+    if (mq.matches !== isFinePointer) {
+      setIsFinePointer(mq.matches);
+    }
 
     const handler = (e: MediaQueryListEvent) => setIsFinePointer(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
-  }, []);
+  }, [isFinePointer]);
 
   useEffect(() => {
     if (!isFinePointer) return;
@@ -42,7 +45,7 @@ export default function CustomCursor() {
       }
     };
 
-    // Use event delegation for hover states instead of expensive elementFromPoint!
+    // Use event delegation for hover states
     const onMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const magneticEl = target.closest('[data-cursor="grow"]');
@@ -122,10 +125,10 @@ export default function CustomCursor() {
           border: '1.5px solid white',
           borderRadius: '50%',
           pointerEvents: 'none',
-          zIndex: 9999,
-          transition: 'width 200ms cubic-bezier(0.23, 1, 0.32, 1), height 200ms cubic-bezier(0.23, 1, 0.32, 1), border-color 200ms ease, opacity 200ms ease',
+          zIndex: 999999,
+          transition: 'width 150ms var(--ease-out), height 150ms var(--ease-out), border-color 150ms var(--ease-out), opacity 150ms var(--ease-out)',
           transform: 'translate(-50%, -50%)',
-          willChange: 'transform, width, height'
+          willChange: 'transform'
         }}
       />
       {/* Inner Dot */}
@@ -140,7 +143,7 @@ export default function CustomCursor() {
           backgroundColor: 'white',
           borderRadius: '50%',
           pointerEvents: 'none',
-          zIndex: 9999,
+          zIndex: 999999,
           transform: 'translate(-50%, -50%)',
           willChange: 'transform'
         }}

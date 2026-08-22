@@ -3,6 +3,7 @@ import { create } from 'zustand';
 interface SoundState {
   isMuted: boolean;
   toggleMute: () => void;
+  unmute: () => void;
   playHover: () => void;
   playClick: () => void;
 }
@@ -119,6 +120,13 @@ export const useSoundStore = create<SoundState>((set, get) => ({
     const nextMuted = !get().isMuted;
     set({ isMuted: nextMuted });
     toggleSynthAmbient(!nextMuted);
+  },
+
+  unmute: () => {
+    if (get().isMuted) {
+      set({ isMuted: false });
+      toggleSynthAmbient(true);
+    }
   },
 
   playHover: () => {
