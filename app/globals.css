@@ -18,8 +18,8 @@
 @theme inline {
   --color-background: #000000;
   --color-foreground: #f0f0f5;
-  --font-sans: var(--font-outfit);
-  --font-mono: var(--font-tech), ui-monospace, SFMono-Regular, monospace;
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
 /* ─── Reset ────────────────────────────────────────────── */

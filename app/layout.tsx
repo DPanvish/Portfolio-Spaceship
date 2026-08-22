@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import { Outfit, Share_Tech_Mono } from "next/font/google";
+import { Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.css";
 
-// Outfit: clean, modern, geometric — suits the spaceship UI aesthetic
-const outfit = Outfit({
-  variable: "--font-outfit",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
 });
 
-const shareTechMono = Share_Tech_Mono({
-  variable: "--font-tech",
-  weight: "400",
+const spaceMono = Space_Mono({
+  variable: "--font-mono",
+  weight: ["400", "700"],
   subsets: ["latin"],
   display: "swap",
 });
@@ -21,11 +20,15 @@ export const metadata: Metadata = {
   description: "An interactive 3D portfolio",
 };
 
+import SoundProvider from '@/components/providers/SoundProvider';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${shareTechMono.variable}`}>
+    <html lang="en" className={`${spaceGrotesk.variable} ${spaceMono.variable}`}>
       <body className="min-h-full bg-black text-white antialiased">
-        {children}
+        <SoundProvider>
+          {children}
+        </SoundProvider>
       </body>
     </html>
   );

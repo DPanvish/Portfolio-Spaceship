@@ -9,10 +9,12 @@ import FloatingNav from '@/components/ui/FloatingNav';
 import FilmGrain from '@/components/ui/FilmGrain';
 import Marquee from '@/components/ui/Marquee';
 import ScrollProgress from '@/components/ui/ScrollProgress';
+import Preloader from '@/components/ui/Preloader';
 
 export default function SitePage() {
   return (
     <main>
+      <Preloader />
       <FilmGrain />
       <ScrollProgress />
       <CustomCursor />

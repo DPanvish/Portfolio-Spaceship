@@ -20,8 +20,8 @@ export default function ContactSection() {
               <div className="line" />
             </div>
 
-            <form className="flex flex-col gap-8 reveal-up" style={{ transitionDelay: '100ms' }}>
-              <div className="group relative">
+            <form className="flex flex-col gap-8 stagger-group">
+              <div className="group relative stagger-item">
                 <input 
                   type="text" 
                   id="name" 
@@ -37,7 +37,7 @@ export default function ContactSection() {
                 </label>
               </div>
 
-              <div className="group relative">
+              <div className="group relative stagger-item">
                 <input 
                   type="email" 
                   id="email" 
@@ -53,7 +53,7 @@ export default function ContactSection() {
                 </label>
               </div>
 
-              <div className="group relative mt-2">
+              <div className="group relative mt-2 stagger-item">
                 <textarea 
                   id="message" 
                   required 
@@ -71,7 +71,7 @@ export default function ContactSection() {
 
               <button 
                 type="button" 
-                className="btn self-start mt-4" 
+                className="btn self-start mt-4 stagger-item" 
                 data-cursor="grow"
                 onClick={(e) => e.preventDefault()}
               >
@@ -84,7 +84,7 @@ export default function ContactSection() {
           </div>
 
           {/* Right Column: Decorative Status Card */}
-          <div className="reveal-up" style={{ transitionDelay: '200ms' }}>
+          <div className="reveal-up">
             <TiltCard maxTilt={5}>
               <div className="relative w-full aspect-square md:aspect-[4/3] border border-white/10 bg-black/40 flex flex-col justify-between p-8 overflow-hidden group" data-cursor="grow">
                 {/* Background grid */}
