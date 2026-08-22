@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 // Spaceship — a detailed procedural model built from Three.js geometry.
 // Aerodynamic fuselage with swept wings, dual engines, cockpit canopy,
@@ -14,6 +15,7 @@ export default function Spaceship(props: SpaceshipProps) {
   const shipRef = useRef<THREE.Group>(null);
   const exhaustLeftRef = useRef<THREE.Mesh>(null);
   const exhaustRightRef = useRef<THREE.Mesh>(null);
+  const reducedMotion = useReducedMotion();
 
   // Shared materials (memoized to avoid re-creation every render)
   const materials = useMemo(() => ({
@@ -58,7 +60,7 @@ export default function Spaceship(props: SpaceshipProps) {
 
   // Idle hover + engine pulse
   useFrame((state) => {
-    if (!shipRef.current) return;
+    if (!shipRef.current || reducedMotion) return;
     const t = state.clock.elapsedTime;
 
     // Gentle bobbing

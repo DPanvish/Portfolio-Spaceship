@@ -43,99 +43,111 @@ export default function ScrollProvider({ children }: { children: React.ReactNode
   // Setup scroll-triggered reveal animations
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Animate all .reveal-up elements when they enter the viewport
-      gsap.utils.toArray<HTMLElement>('.reveal-up').forEach((el) => {
-        gsap.to(el, {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: el,
-            start: 'top 85%',
-            once: true,
-          },
-        });
+      const mm = gsap.matchMedia();
+
+      // For users who prefer reduced motion, instantly reveal everything
+      mm.add('(prefers-reduced-motion: reduce)', () => {
+        gsap.set('.reveal-up, .reveal-left, .reveal-right, .reveal-scale', { opacity: 1, x: 0, y: 0, scale: 1 });
+        gsap.set('.line', { width: '100%' });
+        gsap.set('.stagger-item', { opacity: 1, y: 0 });
       });
 
-      // Animate all .reveal-left elements
-      gsap.utils.toArray<HTMLElement>('.reveal-left').forEach((el) => {
-        gsap.to(el, {
-          opacity: 1,
-          x: 0,
-          duration: 0.8,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: el,
-            start: 'top 85%',
-            once: true,
-          },
-        });
-      });
-
-      // Animate all .reveal-right elements
-      gsap.utils.toArray<HTMLElement>('.reveal-right').forEach((el) => {
-        gsap.to(el, {
-          opacity: 1,
-          x: 0,
-          duration: 0.8,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: el,
-            start: 'top 85%',
-            once: true,
-          },
-        });
-      });
-
-      // Animate all .reveal-scale elements
-      gsap.utils.toArray<HTMLElement>('.reveal-scale').forEach((el) => {
-        gsap.to(el, {
-          opacity: 1,
-          scale: 1,
-          duration: 0.8,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: el,
-            start: 'top 85%',
-            once: true,
-          },
-        });
-      });
-
-      // Animate .line elements (width expansion)
-      gsap.utils.toArray<HTMLElement>('.line').forEach((el) => {
-        gsap.to(el, {
-          width: '100%',
-          duration: 1.2,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: el,
-            start: 'top 90%',
-            once: true,
-          },
-        });
-      });
-
-      // Stagger animations for groups
-      gsap.utils.toArray<HTMLElement>('.stagger-group').forEach((group) => {
-        const items = group.querySelectorAll('.stagger-item');
-        gsap.fromTo(
-          items,
-          { opacity: 0, y: 20 },
-          {
+      // For normal users, setup scroll triggers
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        // Animate all .reveal-up elements when they enter the viewport
+        gsap.utils.toArray<HTMLElement>('.reveal-up').forEach((el) => {
+          gsap.to(el, {
             opacity: 1,
             y: 0,
-            duration: 0.5,
-            stagger: 0.06,
+            duration: 0.8,
             ease: 'power3.out',
             scrollTrigger: {
-              trigger: group,
+              trigger: el,
               start: 'top 85%',
               once: true,
             },
-          }
-        );
+          });
+        });
+
+        // Animate all .reveal-left elements
+        gsap.utils.toArray<HTMLElement>('.reveal-left').forEach((el) => {
+          gsap.to(el, {
+            opacity: 1,
+            x: 0,
+            duration: 0.8,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 85%',
+              once: true,
+            },
+          });
+        });
+
+        // Animate all .reveal-right elements
+        gsap.utils.toArray<HTMLElement>('.reveal-right').forEach((el) => {
+          gsap.to(el, {
+            opacity: 1,
+            x: 0,
+            duration: 0.8,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 85%',
+              once: true,
+            },
+          });
+        });
+
+        // Animate all .reveal-scale elements
+        gsap.utils.toArray<HTMLElement>('.reveal-scale').forEach((el) => {
+          gsap.to(el, {
+            opacity: 1,
+            scale: 1,
+            duration: 0.8,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 85%',
+              once: true,
+            },
+          });
+        });
+
+        // Animate .line elements (width expansion)
+        gsap.utils.toArray<HTMLElement>('.line').forEach((el) => {
+          gsap.to(el, {
+            width: '100%',
+            duration: 1.2,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 90%',
+              once: true,
+            },
+          });
+        });
+
+        // Stagger animations for groups
+        gsap.utils.toArray<HTMLElement>('.stagger-group').forEach((group) => {
+          const items = group.querySelectorAll('.stagger-item');
+          gsap.fromTo(
+            items,
+            { opacity: 0, y: 20 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.5,
+              stagger: 0.06,
+              ease: 'power3.out',
+              scrollTrigger: {
+                trigger: group,
+                start: 'top 85%',
+                once: true,
+              },
+            }
+          );
+        });
       });
     }, containerRef);
 
