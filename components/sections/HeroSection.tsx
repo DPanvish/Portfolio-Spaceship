@@ -5,19 +5,39 @@ import gsap from 'gsap';
 import SceneCanvas from '@/components/scene/SceneCanvas';
 import TextScramble from '@/components/ui/TextScramble';
 
+import { useAppStore } from '@/store/useAppStore';
+
 export default function HeroSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const shipContainerRef = useRef<HTMLDivElement>(null);
+  const isReady = useAppStore((state) => state.isReady);
 
-  // Character-by-character text animation on mount
+  // Cinematic launch sequence on mount (waits for Preloader)
   useEffect(() => {
-    if (!headingRef.current) return;
+    if (!headingRef.current || !isReady) return;
 
     const chars = headingRef.current.querySelectorAll('.char');
-    const tl = gsap.timeline({ delay: 0.3 });
+    const tl = gsap.timeline();
 
-    // Stagger each character in
+    // 1. Ship drops in from top with a warp effect
+    if (shipContainerRef.current) {
+      tl.fromTo(
+        shipContainerRef.current,
+        { y: '-100vh', scale: 0.2, rotateX: 45 },
+        {
+          y: '0',
+          scale: 1,
+          rotateX: 0,
+          duration: 2,
+          ease: 'power4.out',
+        },
+        0
+      );
+    }
+
+    // 2. Stagger each character in
     tl.fromTo(
       chars,
       { opacity: 0, y: 60, rotateX: -40 },
@@ -28,10 +48,11 @@ export default function HeroSection() {
         duration: 0.8,
         stagger: 0.03,
         ease: 'power3.out',
-      }
+      },
+      0.5 // Start slightly after ship begins dropping
     );
 
-    // Fade in the rest of the content
+    // 3. Fade in the rest of the content
     if (contentRef.current) {
       const items = contentRef.current.querySelectorAll('.hero-fade');
       tl.fromTo(
@@ -49,7 +70,7 @@ export default function HeroSection() {
     }
 
     return () => { tl.kill(); };
-  }, []);
+  }, [isReady]);
 
   // Mouse parallax on the hero section
   useEffect(() => {
@@ -100,6 +121,7 @@ export default function HeroSection() {
 
       {/* 3D Spaceship — decorative, with mouse parallax */}
       <div
+        ref={shipContainerRef}
         className="absolute inset-0 z-[1] transition-transform duration-300 ease-out"
         data-parallax="deep"
       >
