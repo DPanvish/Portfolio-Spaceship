@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSoundStore } from '@/store/useSoundStore';
+import Logo from '@/components/ui/Logo';
 
 const NAV_LINKS = [
   { name: 'About', href: '#about' },
@@ -87,12 +88,24 @@ export default function FloatingNav() {
           borderRadius: '9999px',
           padding: '0.5rem 1.5rem',
           display: 'flex',
+          alignItems: 'center',
           gap: '1.5rem',
           opacity: isVisible ? 1 : 0,
           pointerEvents: isVisible ? 'auto' : 'none',
           transition: 'opacity 300ms cubic-bezier(0.23, 1, 0.32, 1), transform 300ms cubic-bezier(0.23, 1, 0.32, 1)',
         }}
       >
+        <a 
+          href="#top" 
+          className="text-white hover:text-[color:var(--color-accent)] transition-colors duration-300 mr-2"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        >
+          <Logo className="w-5 h-5" />
+        </a>
+
         {NAV_LINKS.map((link) => {
           const isActive = activeSection === link.href.substring(1);
           return (

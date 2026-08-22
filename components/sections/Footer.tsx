@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import TextScramble from '@/components/ui/TextScramble';
+import Logo from '@/components/ui/Logo';
 
 const SYSTEM_LOGS = [
   '[SYS] Initializing core protocols...',
@@ -77,9 +78,12 @@ export default function Footer() {
               <path d="M8 13V3M4 7l4-4 4 4" />
             </svg>
           </button>
-          <span className="font-mono text-[10px] text-white/20 tracking-widest uppercase">
-            © {new Date().getFullYear()} SPACESHIP
-          </span>
+          <div className="flex items-center gap-2 opacity-30 mt-2">
+            <Logo className="w-4 h-4" />
+            <span className="font-mono text-[10px] text-white tracking-widest uppercase">
+              © {new Date().getFullYear()} SPACESHIP
+            </span>
+          </div>
         </div>
 
       </div>
