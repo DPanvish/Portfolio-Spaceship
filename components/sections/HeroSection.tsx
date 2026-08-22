@@ -30,7 +30,7 @@ export default function HeroSection() {
           y: '0',
           scale: 1,
           rotateX: 0,
-          duration: 2,
+          duration: 2.5, // slightly longer drop
           ease: 'power4.out',
         },
         0
@@ -49,7 +49,7 @@ export default function HeroSection() {
         stagger: 0.03,
         ease: 'power3.out',
       },
-      0.5 // Start slightly after ship begins dropping
+      1.0 // Start when ship is mostly settled
     );
 
     // 3. Fade in the rest of the content

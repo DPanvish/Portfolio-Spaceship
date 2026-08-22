@@ -1,79 +1,74 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useProgress } from '@react-three/drei';
 import gsap from 'gsap';
 
 import { useAppStore } from '@/store/useAppStore';
 
 export default function Preloader() {
-  const { active, progress: r3fProgress, total } = useProgress();
   const [displayProgress, setDisplayProgress] = useState(0);
   const [hidden, setHidden] = useState(false);
   const setReady = useAppStore((state) => state.setReady);
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
+  const hasFinished = useRef(false);
 
-  // Handle fake/real progress interpolation
+  // Failsafe progress interpolation (guaranteed to hit 100 in ~1.5s)
   useEffect(() => {
-    let raf: number;
-    let current = displayProgress;
-    
-    const update = () => {
-      // If no assets are queued (total === 0), fake the progress to 100
-      const target = total === 0 ? 100 : r3fProgress;
-      
-      current += (target - current) * 0.1;
-      
-      // Force minimum speed if faking
-      if (total === 0) current += 1;
-      
-      if (current >= 99.9) current = 100;
-      
-      setDisplayProgress(current);
-
-      if (current < 100) {
-        raf = requestAnimationFrame(update);
+    let current = 0;
+    const interval = setInterval(() => {
+      current += Math.random() * 8 + 2; // Random jumps for realistic feel
+      if (current >= 100) {
+        current = 100;
+        clearInterval(interval);
       }
+      setDisplayProgress(current);
+    }, 40); // 40ms * ~20 ticks = 800ms + random variance
+
+    // Hard failsafe
+    const timeout = setTimeout(() => setDisplayProgress(100), 2000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
     };
-    
-    raf = requestAnimationFrame(update);
-    return () => cancelAnimationFrame(raf);
-  }, [r3fProgress, total]);
+  }, []);
 
   useEffect(() => {
     // Lock scroll while preloading
     document.body.style.overflow = 'hidden';
 
-    // When progress reaches 100%, animate the preloader out
-    if (displayProgress >= 100) {
+    // When progress reaches 100%, animate the preloader out ONLY ONCE
+    if (displayProgress >= 100 && !hasFinished.current) {
+      hasFinished.current = true;
+      
       const tl = gsap.timeline({
         onComplete: () => {
           setHidden(true);
           setReady(true);
           document.body.style.overflow = '';
         },
-        delay: 0.5 // Brief pause at 100% for effect
+        delay: 0.2 // Brief pause at 100%
       });
 
       tl.to(textRef.current, {
         opacity: 0,
         y: -20,
-        duration: 0.5,
+        duration: 0.4,
         ease: 'power3.in'
       }, 0)
       .to(barRef.current, {
         scaleX: 0,
         opacity: 0,
-        duration: 0.5,
+        duration: 0.4,
         ease: 'power3.in'
       }, 0.1)
       .to(containerRef.current, {
         opacity: 0,
-        duration: 0.8,
+        duration: 0.6,
         ease: 'power2.inOut'
-      }, 0.3);
+      }, 0.2);
     }
   }, [displayProgress, setReady]);
 
