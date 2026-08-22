@@ -7,19 +7,47 @@ import gsap from 'gsap';
 import { useAppStore } from '@/store/useAppStore';
 
 export default function Preloader() {
-  const { active, progress } = useProgress();
+  const { active, progress: r3fProgress, total } = useProgress();
+  const [displayProgress, setDisplayProgress] = useState(0);
   const [hidden, setHidden] = useState(false);
   const setReady = useAppStore((state) => state.setReady);
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
+  // Handle fake/real progress interpolation
+  useEffect(() => {
+    let raf: number;
+    let current = displayProgress;
+    
+    const update = () => {
+      // If no assets are queued (total === 0), fake the progress to 100
+      const target = total === 0 ? 100 : r3fProgress;
+      
+      current += (target - current) * 0.1;
+      
+      // Force minimum speed if faking
+      if (total === 0) current += 1;
+      
+      if (current >= 99.9) current = 100;
+      
+      setDisplayProgress(current);
+
+      if (current < 100) {
+        raf = requestAnimationFrame(update);
+      }
+    };
+    
+    raf = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(raf);
+  }, [r3fProgress, total]);
+
   useEffect(() => {
     // Lock scroll while preloading
     document.body.style.overflow = 'hidden';
 
     // When progress reaches 100%, animate the preloader out
-    if (progress === 100) {
+    if (displayProgress >= 100) {
       const tl = gsap.timeline({
         onComplete: () => {
           setHidden(true);
@@ -47,7 +75,7 @@ export default function Preloader() {
         ease: 'power2.inOut'
       }, 0.3);
     }
-  }, [progress]);
+  }, [displayProgress, setReady]);
 
   if (hidden) return null;
 
@@ -66,7 +94,7 @@ export default function Preloader() {
             Initializing Flight Systems
           </span>
           <span className="font-mono text-3xl font-bold tracking-tight text-[color:var(--color-accent)]">
-            {Math.round(progress)}%
+            {Math.round(displayProgress)}%
           </span>
         </div>
 
@@ -75,12 +103,12 @@ export default function Preloader() {
           <div 
             ref={barRef}
             className="absolute top-0 left-0 h-full bg-[color:var(--color-accent)] origin-left"
-            style={{ width: `${progress}%`, transition: 'width 0.2s ease-out' }}
+            style={{ width: `${displayProgress}%`, transition: 'width 0.1s ease-out' }}
           />
           {/* Glowing dot at the end of progress */}
           <div 
-            className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[color:var(--color-accent)] rounded-full shadow-[0_0_10px_#00f0ff] transition-all duration-200"
-            style={{ left: `calc(${progress}% - 3px)` }}
+            className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[color:var(--color-accent)] rounded-full shadow-[0_0_10px_#00f0ff] transition-all duration-100"
+            style={{ left: `calc(${displayProgress}% - 3px)` }}
           />
         </div>
       </div>
