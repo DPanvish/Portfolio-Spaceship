@@ -56,28 +56,31 @@ export default function ProjectsSection() {
 
         {/* Project Cards with 3D tilt */}
         {projects.map((project) => (
-          <TiltCard key={project.id} className="flex-shrink-0 w-[80vw] md:w-[55vw] min-w-[350px]" maxTilt={6}>
-            <div className="flex flex-col gap-5 group" data-cursor="grow">
+          <TiltCard key={project.id} className="flex-shrink-0 w-[80vw] md:w-[55vw] min-w-[350px]" maxTilt={4}>
+            <div 
+              className="flex flex-col gap-5 group cursor-pointer" 
+              data-cursor="grow"
+              style={{ '--project-accent': project.accent } as React.CSSProperties}
+            >
               {/* Image area */}
               <div
-                className="relative w-full aspect-[16/10] overflow-hidden"
+                className="relative w-full aspect-[16/10] overflow-hidden rounded-xl border border-white/5 transition-all duration-300 ease-out project-card-img"
                 style={{ backgroundColor: project.bg }}
               >
                 {/* Project number */}
-                <div className="absolute top-5 left-5 font-mono text-xs text-white/15 z-10">
+                <div className="absolute top-5 left-5 font-mono text-xs text-white/30 z-10">
                   {project.id}
                 </div>
 
-                {/* Accent line at top */}
-                <div
-                  className="absolute top-0 left-0 right-0 h-[2px] z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  style={{ background: project.accent }}
+                {/* Accent border overlay */}
+                <div 
+                  className="absolute inset-0 border-2 border-transparent group-hover:border-[var(--project-accent)] opacity-0 group-hover:opacity-100 rounded-xl transition-all duration-300 ease-out pointer-events-none z-20" 
                 />
 
                 {/* Center content placeholder */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center transition-transform duration-300 ease-out group-hover:scale-105">
                   <span
-                    className="text-6xl md:text-8xl font-bold opacity-[0.03] select-none"
+                    className="text-6xl md:text-8xl font-bold opacity-[0.05] group-hover:opacity-[0.08] select-none transition-opacity duration-300"
                     style={{ color: project.accent }}
                   >
                     {project.title.split(' ')[0]}
@@ -85,23 +88,37 @@ export default function ProjectsSection() {
                 </div>
 
                 {/* Bottom gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
 
                 {/* "View Project" on hover */}
-                <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                  <span className="font-mono text-xs tracking-widest uppercase" style={{ color: project.accent }}>
-                    View →
+                <div className="absolute bottom-5 right-5 flex items-center gap-2 z-10 overflow-hidden">
+                  <span 
+                    className="font-mono text-xs tracking-widest uppercase translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out" 
+                    style={{ color: project.accent, transitionDelay: '50ms' }}
+                  >
+                    View Project
                   </span>
+                  <svg 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 16 16" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="1.5"
+                    className="text-[var(--project-accent)] -translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 ease-out"
+                  >
+                    <path d="M4 8h8M8 4l4 4-4 4" />
+                  </svg>
                 </div>
               </div>
 
               {/* Info */}
-              <div className="flex flex-col gap-2 px-1">
+              <div className="flex flex-col gap-2 px-2">
                 <div className="flex items-baseline justify-between gap-4">
-                  <h3 className="text-xl md:text-2xl font-bold text-white">{project.title}</h3>
-                  <span className="font-mono text-xs text-white/25 tracking-wider uppercase">{project.category}</span>
+                  <h3 className="text-xl md:text-2xl font-bold text-white/90 group-hover:text-white transition-colors duration-200">{project.title}</h3>
+                  <span className="font-mono text-[10px] md:text-xs text-white/30 tracking-wider uppercase">{project.category}</span>
                 </div>
-                <p className="text-white/35 text-sm leading-relaxed">{project.desc}</p>
+                <p className="text-white/40 text-sm md:text-base leading-relaxed">{project.desc}</p>
               </div>
             </div>
           </TiltCard>
@@ -110,6 +127,18 @@ export default function ProjectsSection() {
         {/* End spacer */}
         <div className="w-[10vw] flex-shrink-0" />
       </div>
+
+      <style jsx>{`
+        @media (hover: hover) and (pointer: fine) {
+          .project-card-img:hover {
+            box-shadow: 0 0 40px -10px var(--project-accent);
+          }
+          
+          .group:active .project-card-img {
+            transform: scale(0.98);
+          }
+        }
+      `}</style>
     </section>
   );
 }

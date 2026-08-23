@@ -33,17 +33,18 @@ export default function ScrollProgress() {
         width: '100%',
         height: '2px',
         zIndex: 100,
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
+        pointerEvents: 'none'
       }}
     >
       <div
         ref={progressRef}
         style={{
           height: '100%',
-          background: 'linear-gradient(to right, #00f0ff, #f000ff)',
+          backgroundColor: 'var(--color-accent, #00f0ff)',
           transformOrigin: 'left',
           transform: 'scaleX(0)',
-          boxShadow: '0 0 10px rgba(0,240,255,0.3)',
+          boxShadow: '0 0 10px var(--color-accent-dim, rgba(0,240,255,0.5))',
           willChange: 'transform'
         }}
       />
