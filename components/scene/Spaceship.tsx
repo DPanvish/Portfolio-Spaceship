@@ -1,13 +1,9 @@
 'use client';
 
-import { useRef, useMemo, useEffect, useState } from 'react';
+import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-
-// Spaceship — a detailed procedural model built from Three.js geometry.
-// Aerodynamic fuselage with swept wings, dual engines, cockpit canopy,
-// glowing engine exhausts, and antenna details.
 
 type SpaceshipProps = React.ComponentPropsWithoutRef<'group'>;
 
@@ -17,44 +13,67 @@ export default function Spaceship(props: SpaceshipProps) {
   const exhaustRightRef = useRef<THREE.Mesh>(null);
   const reducedMotion = useReducedMotion();
 
-  // Shared materials (memoized to avoid re-creation every render)
+  // Create a smooth aerodynamic curve for the main fuselage
+  const fuselagePoints = useMemo(() => {
+    const points = [];
+    for (let i = 0; i <= 20; i++) {
+      const t = i / 20; // 0 to 1
+      const y = t * 4 - 2; // -2 to 2 (length 4)
+      
+      // Aerodynamic profile: sharp nose (t=1, y=2), thicker middle, tapered back
+      let r = 0;
+      if (t > 0.8) {
+        // Nose cone
+        r = (1 - t) * 5 * 0.4;
+      } else if (t > 0.2) {
+        // Main body
+        r = 0.4;
+      } else {
+        // Taper to engines
+        r = 0.4 - (0.2 - t) * 1.0;
+      }
+      
+      // Smooth out the sharp edges
+      r = Math.max(0.1, r);
+      
+      points.push(new THREE.Vector2(r, y));
+    }
+    return points;
+  }, []);
+
+  // Premium Sci-Fi Materials
   const materials = useMemo(() => ({
-    hull: new THREE.MeshStandardMaterial({
-      color: '#8090a0',
-      roughness: 0.25,
-      metalness: 0.85,
+    hullPrimary: new THREE.MeshStandardMaterial({
+      color: '#e0e5ff', // Very light silver/white (high visibility)
+      roughness: 0.2,
+      metalness: 0.8,
+      envMapIntensity: 1.5,
     }),
     hullDark: new THREE.MeshStandardMaterial({
-      color: '#3a4550',
-      roughness: 0.3,
-      metalness: 0.9,
+      color: '#151820', // Dark contrast panels
+      roughness: 0.5,
+      metalness: 0.6,
+      envMapIntensity: 1.0,
     }),
-    cockpit: new THREE.MeshPhysicalMaterial({
-      color: '#00d4ff',
+    glass: new THREE.MeshPhysicalMaterial({
+      color: '#00aaff',
       roughness: 0.05,
-      metalness: 0.1,
-      transmission: 0.6,
-      thickness: 0.3,
-      clearcoat: 1,
-      emissive: '#004060',
-      emissiveIntensity: 0.4,
-    }),
-    engineGlow: new THREE.MeshBasicMaterial({
-      color: '#00eeff',
-      transparent: true,
-      opacity: 0.9,
-    }),
-    exhaustGlow: new THREE.MeshBasicMaterial({
-      color: '#00ccff',
-      transparent: true,
-      opacity: 0.6,
+      metalness: 0.9,
+      transmission: 0.9, // Glass effect
+      thickness: 0.5,
+      clearcoat: 1.0,
+      envMapIntensity: 2.0,
     }),
     accent: new THREE.MeshStandardMaterial({
       color: '#00f0ff',
-      emissive: '#00a0c0',
-      emissiveIntensity: 0.6,
-      roughness: 0.2,
-      metalness: 0.8,
+      emissive: '#00f0ff',
+      emissiveIntensity: 0.8,
+    }),
+    exhaustGlow: new THREE.MeshBasicMaterial({
+      color: '#00f0ff',
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
     }),
   }), []);
 
@@ -63,136 +82,117 @@ export default function Spaceship(props: SpaceshipProps) {
     if (!shipRef.current || reducedMotion) return;
     const t = state.clock.elapsedTime;
 
-    // Gentle bobbing
-    shipRef.current.position.y = Math.sin(t * 1.2) * 0.06;
-    // Micro yaw sway
-    shipRef.current.rotation.z = Math.sin(t * 0.7) * 0.02;
-    // Slight pitch
-    shipRef.current.rotation.x = Math.sin(t * 0.5) * 0.03;
+    // Smooth floating
+    shipRef.current.position.y = Math.sin(t * 1.5) * 0.1;
+    shipRef.current.rotation.z = Math.sin(t * 0.8) * 0.05; // slight roll
+    shipRef.current.rotation.x = Math.sin(t * 0.6) * 0.03; // pitch
 
     // Pulsating engine exhaust
-    const pulse = 0.7 + Math.sin(t * 6) * 0.3;
+    const pulse = 0.7 + Math.sin(t * 15) * 0.3;
     if (exhaustLeftRef.current) {
-      exhaustLeftRef.current.scale.set(1, 1, pulse);
+      exhaustLeftRef.current.scale.set(1, pulse, 1);
     }
     if (exhaustRightRef.current) {
-      exhaustRightRef.current.scale.set(1, 1, pulse);
+      exhaustRightRef.current.scale.set(1, pulse, 1);
     }
   });
 
   return (
-    <group ref={shipRef} {...props} scale={0.6}>
+    <group ref={shipRef} {...props} scale={0.5}>
+      
       {/* ─── Main Fuselage ─── */}
-      {/* Nose cone (tapered front) */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -1.2]} material={materials.hull}>
-        <coneGeometry args={[0.35, 2.0, 12]} />
-      </mesh>
-
-      {/* Central body (smooth cylinder) */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.3]} material={materials.hull}>
-        <cylinderGeometry args={[0.4, 0.35, 2.2, 12]} />
-      </mesh>
-
-      {/* Rear body (wider engine housing) */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 1.6]} material={materials.hullDark}>
-        <cylinderGeometry args={[0.5, 0.4, 0.8, 12]} />
+      {/* Rotated so the nose (Y=2) points towards -Z (forward) */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} material={materials.hullPrimary}>
+        <latheGeometry args={[fuselagePoints, 32]} />
       </mesh>
 
       {/* ─── Cockpit Canopy ─── */}
-      <mesh position={[0, 0.28, -0.5]} rotation={[-0.2, 0, 0]} material={materials.cockpit}>
-        <sphereGeometry args={[0.25, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
-      </mesh>
-      {/* Cockpit frame ring */}
-      <mesh position={[0, 0.22, -0.5]} rotation={[-0.2, 0, 0]} material={materials.accent}>
-        <torusGeometry args={[0.25, 0.02, 8, 16]} />
+      <mesh position={[0, 0.35, -0.2]} rotation={[-0.1, 0, 0]} material={materials.glass} scale={[1, 0.5, 2]}>
+        <sphereGeometry args={[0.3, 32, 16]} />
       </mesh>
 
-      {/* ─── Left Wing (swept back) ─── */}
-      <group position={[-0.4, -0.05, 0.6]}>
-        {/* Wing surface */}
-        <mesh rotation={[0, 0.3, -0.05]} material={materials.hull}>
-          <boxGeometry args={[1.6, 0.04, 0.7]} />
+      {/* ─── Main Wings (Swept Back) ─── */}
+      {/* Left Wing */}
+      <group position={[-0.8, 0, 0.5]}>
+        {/* We use a thin box for the wing, angled back */}
+        <mesh rotation={[0, 0.5, 0]} material={materials.hullPrimary}>
+          <boxGeometry args={[1.8, 0.06, 1.2]} />
         </mesh>
-        {/* Wing tip accent strip */}
-        <mesh position={[-0.75, 0.02, 0.1]} rotation={[0, 0.3, -0.05]} material={materials.accent}>
-          <boxGeometry args={[0.12, 0.06, 0.5]} />
+        {/* Wing trim / armor plate */}
+        <mesh position={[0, 0.04, 0]} rotation={[0, 0.5, 0]} material={materials.hullDark}>
+          <boxGeometry args={[1.5, 0.02, 0.8]} />
+        </mesh>
+        {/* Wingtip glow */}
+        <mesh position={[-0.9, 0, 0.5]} rotation={[0, 0.5, 0]} material={materials.accent}>
+          <boxGeometry args={[0.06, 0.1, 0.8]} />
         </mesh>
       </group>
 
-      {/* ─── Right Wing (swept back) ─── */}
-      <group position={[0.4, -0.05, 0.6]}>
-        <mesh rotation={[0, -0.3, 0.05]} material={materials.hull}>
-          <boxGeometry args={[1.6, 0.04, 0.7]} />
+      {/* Right Wing */}
+      <group position={[0.8, 0, 0.5]}>
+        <mesh rotation={[0, -0.5, 0]} material={materials.hullPrimary}>
+          <boxGeometry args={[1.8, 0.06, 1.2]} />
         </mesh>
-        <mesh position={[0.75, 0.02, 0.1]} rotation={[0, -0.3, 0.05]} material={materials.accent}>
-          <boxGeometry args={[0.12, 0.06, 0.5]} />
+        <mesh position={[0, 0.04, 0]} rotation={[0, -0.5, 0]} material={materials.hullDark}>
+          <boxGeometry args={[1.5, 0.02, 0.8]} />
         </mesh>
-      </group>
-
-      {/* ─── Vertical Stabilizer (tail fin) ─── */}
-      <mesh position={[0, 0.35, 1.4]} rotation={[0.15, 0, 0]} material={materials.hullDark}>
-        <boxGeometry args={[0.04, 0.5, 0.6]} />
-      </mesh>
-      {/* Tail fin tip light */}
-      <mesh position={[0, 0.6, 1.3]} material={materials.accent}>
-        <sphereGeometry args={[0.03, 8, 8]} />
-      </mesh>
-
-      {/* ─── Engine Nacelles ─── */}
-      {/* Left engine */}
-      <group position={[-0.5, -0.1, 1.2]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]} material={materials.hullDark}>
-          <cylinderGeometry args={[0.15, 0.18, 0.8, 10]} />
-        </mesh>
-        {/* Engine intake ring */}
-        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.35]} material={materials.accent}>
-          <torusGeometry args={[0.15, 0.02, 8, 12]} />
-        </mesh>
-        {/* Engine glow core */}
-        <mesh position={[0, 0, 0.45]} material={materials.engineGlow}>
-          <circleGeometry args={[0.12, 12]} />
-        </mesh>
-        {/* Exhaust plume */}
-        <mesh ref={exhaustLeftRef} position={[0, 0, 0.7]} rotation={[Math.PI / 2, 0, 0]} material={materials.exhaustGlow}>
-          <coneGeometry args={[0.1, 0.6, 8]} />
+        <mesh position={[0.9, 0, 0.5]} rotation={[0, -0.5, 0]} material={materials.accent}>
+          <boxGeometry args={[0.06, 0.1, 0.8]} />
         </mesh>
       </group>
 
-      {/* Right engine */}
-      <group position={[0.5, -0.1, 1.2]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]} material={materials.hullDark}>
-          <cylinderGeometry args={[0.15, 0.18, 0.8, 10]} />
+      {/* ─── Vertical Tail Fin ─── */}
+      <group position={[0, 0.6, 1.2]}>
+        <mesh rotation={[-0.3, 0, 0]} material={materials.hullPrimary}>
+          <boxGeometry args={[0.06, 1.0, 0.8]} />
         </mesh>
-        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.35]} material={materials.accent}>
-          <torusGeometry args={[0.15, 0.02, 8, 12]} />
-        </mesh>
-        <mesh position={[0, 0, 0.45]} material={materials.engineGlow}>
-          <circleGeometry args={[0.12, 12]} />
-        </mesh>
-        <mesh ref={exhaustRightRef} position={[0, 0, 0.7]} rotation={[Math.PI / 2, 0, 0]} material={materials.exhaustGlow}>
-          <coneGeometry args={[0.1, 0.6, 8]} />
+        <mesh position={[0, 0.5, 0.3]} material={materials.accent}>
+          <boxGeometry args={[0.1, 0.1, 0.2]} />
         </mesh>
       </group>
 
-      {/* ─── Hull detail lines ─── */}
-      {/* Side panel lines */}
-      <mesh position={[0.38, 0, 0]} rotation={[0, 0, 0]} material={materials.hullDark}>
-        <boxGeometry args={[0.01, 0.02, 2.5]} />
-      </mesh>
-      <mesh position={[-0.38, 0, 0]} rotation={[0, 0, 0]} material={materials.hullDark}>
-        <boxGeometry args={[0.01, 0.02, 2.5]} />
-      </mesh>
+      {/* ─── Engine Nacelles (Mounted on wings) ─── */}
+      
+      {/* Left Engine */}
+      <group position={[-1.2, -0.1, 0.8]}>
+        {/* Engine Casing */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} material={materials.hullDark}>
+          <cylinderGeometry args={[0.25, 0.25, 1.4, 16]} />
+        </mesh>
+        {/* Front Intake */}
+        <mesh position={[0, 0, -0.7]} rotation={[-Math.PI / 2, 0, 0]} material={materials.accent}>
+          <torusGeometry args={[0.2, 0.05, 8, 16]} />
+        </mesh>
+        {/* Exhaust Glow */}
+        <mesh ref={exhaustLeftRef} position={[0, 0, 1.5]} rotation={[Math.PI / 2, 0, 0]} material={materials.exhaustGlow}>
+          <coneGeometry args={[0.22, 1.5, 16]} />
+        </mesh>
+      </group>
 
-      {/* ─── Antenna ─── */}
-      <mesh position={[0, 0.15, -1.9]} material={materials.accent}>
-        <cylinderGeometry args={[0.008, 0.008, 0.4, 4]} />
-      </mesh>
-      <mesh position={[0, 0.35, -1.9]} material={materials.accent}>
-        <sphereGeometry args={[0.02, 6, 6]} />
-      </mesh>
+      {/* Right Engine */}
+      <group position={[1.2, -0.1, 0.8]}>
+        {/* Engine Casing */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} material={materials.hullDark}>
+          <cylinderGeometry args={[0.25, 0.25, 1.4, 16]} />
+        </mesh>
+        {/* Front Intake */}
+        <mesh position={[0, 0, -0.7]} rotation={[-Math.PI / 2, 0, 0]} material={materials.accent}>
+          <torusGeometry args={[0.2, 0.05, 8, 16]} />
+        </mesh>
+        {/* Exhaust Glow */}
+        <mesh ref={exhaustRightRef} position={[0, 0, 1.5]} rotation={[Math.PI / 2, 0, 0]} material={materials.exhaustGlow}>
+          <coneGeometry args={[0.22, 1.5, 16]} />
+        </mesh>
+      </group>
 
-      {/* ─── Point light for self-illumination ─── */}
-      <pointLight position={[0, 0, 0.5]} intensity={0.3} color="#00f0ff" distance={4} decay={2} />
+      {/* ─── Underbelly Details ─── */}
+      <mesh position={[0, -0.2, 0.5]} material={materials.hullDark}>
+        <boxGeometry args={[0.6, 0.2, 2.0]} />
+      </mesh>
+      
+      {/* Ambient under-glow */}
+      <pointLight position={[0, -1, 0]} intensity={2.0} color="#00f0ff" distance={5} decay={2} />
+
     </group>
   );
 }

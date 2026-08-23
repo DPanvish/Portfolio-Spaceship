@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Preload, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
+import { Preload, AdaptiveDpr, AdaptiveEvents, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import SceneLights from './SceneLights';
 import Spaceship from './Spaceship';
@@ -29,7 +29,9 @@ export default function SceneCanvas() {
     >
       <Suspense fallback={null}>
         <SceneLights />
-        <Spaceship position={[0, -0.3, 0]} rotation={[0, Math.PI, 0]} />
+        <Environment preset="city" environmentIntensity={0.2} />
+        {/* Fly diagonally across the screen to show off the sleek profile */}
+        <Spaceship position={[0, -0.3, 0]} rotation={[0.2, Math.PI / 4 + 0.2, -0.1]} />
         <Preload all />
       </Suspense>
 
