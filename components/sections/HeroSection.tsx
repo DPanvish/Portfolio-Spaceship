@@ -30,7 +30,7 @@ export default function HeroSection() {
           y: '0',
           scale: 1,
           rotateX: 0,
-          duration: 2.5, // slightly longer drop
+          duration: 2.5, // cinematic drop
           ease: 'power4.out',
         },
         0
@@ -136,7 +136,12 @@ export default function HeroSection() {
         className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-16 lg:px-24"
         data-parallax="text"
       >
-        <div ref={contentRef} className="flex flex-col gap-6 max-w-3xl">
+        <div ref={contentRef} className="flex flex-col gap-6 max-w-3xl items-start">
+          <div className="hero-fade inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-white/70 backdrop-blur-md" style={{ opacity: 0 }}>
+            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <span>Available for work</span>
+          </div>
+
           <TextScramble text="// MISSION CONTROL" className="section-label hero-fade" delay={200} />
 
           <h1
@@ -154,13 +159,13 @@ export default function HeroSection() {
           </p>
 
           <div className="flex gap-4 mt-4 hero-fade" style={{ opacity: 0 }}>
-            <a href="#projects" className="btn" data-cursor="grow">
+            <a href="#projects" className="hero-btn" data-cursor="grow">
               View Work
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="transition-transform duration-200">
                 <path d="M8 3v10M4 9l4 4 4-4" />
               </svg>
             </a>
-            <a href="#about" className="btn" data-cursor="grow">
+            <a href="#about" className="hero-btn hero-btn-secondary" data-cursor="grow">
               About Me
             </a>
           </div>
@@ -168,20 +173,74 @@ export default function HeroSection() {
       </div>
 
       {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 hero-fade" style={{ opacity: 0 }}>
-        <span className="text-white/15 font-mono text-[10px] tracking-[0.4em] uppercase">Scroll</span>
-        <div className="w-px h-12 relative overflow-hidden">
-          <div className="absolute inset-x-0 top-0 h-full bg-gradient-to-b from-white/30 to-transparent animate-scroll-line" />
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3 hero-fade" style={{ opacity: 0 }}>
+        <span className="text-white/30 font-mono text-[10px] tracking-[0.3em] uppercase">Scroll</span>
+        <div className="w-px h-16 relative overflow-hidden bg-white/10">
+          <div className="absolute inset-x-0 top-0 h-1/2 bg-[color:var(--color-accent)] animate-scroll-line" />
         </div>
       </div>
 
       <style jsx>{`
         @keyframes scroll-line {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(100%); }
+          0% { transform: translateY(-100%); opacity: 0; }
+          50% { opacity: 1; }
+          100% { transform: translateY(200%); opacity: 0; }
         }
         .animate-scroll-line {
-          animation: scroll-line 2s ease-in-out infinite;
+          animation: scroll-line 1.5s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+        }
+
+        .hero-btn {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 1.5rem;
+          font-family: var(--font-mono);
+          font-size: 0.875rem;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: white;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 9999px;
+          transition: transform 0.2s var(--ease-out), opacity 0.2s var(--ease-out), background 0.2s var(--ease-out);
+          will-change: transform;
+        }
+
+        .hero-btn:active {
+          transform: scale(0.97);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+          .hero-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+          }
+          
+          .hero-btn:hover svg {
+            transform: translateY(2px);
+          }
+        }
+        
+        .hero-btn::before {
+          content: '';
+          position: absolute;
+          inset: -1px;
+          border-radius: 9999px;
+          background: linear-gradient(45deg, var(--color-accent), transparent, var(--color-accent));
+          opacity: 0;
+          transition: opacity 0.3s var(--ease-out);
+          z-index: -1;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+          .hero-btn:hover::before {
+            opacity: 0.5;
+          }
+        }
+
+        .hero-btn-secondary::before {
+          display: none;
         }
       `}</style>
     </section>

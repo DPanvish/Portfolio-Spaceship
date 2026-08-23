@@ -17,9 +17,8 @@ export default function FloatingNav() {
   const { isMuted, toggleMute } = useSoundStore();
 
   useEffect(() => {
-    // Scroll listener for visibility
     const handleScroll = () => {
-      const threshold = window.innerHeight * 0.5; // 50vh
+      const threshold = window.innerHeight * 0.5;
       if (window.scrollY > threshold) {
         setIsVisible(true);
       } else {
@@ -28,13 +27,12 @@ export default function FloatingNav() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check
+    handleScroll();
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
-    // Intersection Observer for active link
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -43,12 +41,10 @@ export default function FloatingNav() {
           }
         });
       },
-      {
-        rootMargin: '-50% 0px -50% 0px', // Trigger when section is in the middle of viewport
-      }
+      { rootMargin: '-50% 0px -50% 0px' }
     );
 
-    const sections = NAV_LINKS.map(link => link.href.substring(1));
+    const sections = NAV_LINKS.map((link) => link.href.substring(1));
     sections.forEach((id) => {
       const element = document.getElementById(id);
       if (element) observer.observe(element);
@@ -59,13 +55,30 @@ export default function FloatingNav() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{__html: `
+      <style>{`
         .nav-link {
+          position: relative;
           color: rgba(255, 255, 255, 0.4);
-          transition: color 200ms cubic-bezier(0.23, 1, 0.32, 1), transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+          transition: color 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 200ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+        }
+        .nav-link::after {
+          content: '';
+          position: absolute;
+          bottom: -4px;
+          left: 0;
+          width: 100%;
+          height: 1px;
+          background-color: var(--color-accent, #00f0ff);
+          transform: scaleX(0);
+          transform-origin: right;
+          transition: transform 300ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
         }
         .nav-link.active {
-          color: #00f0ff;
+          color: var(--color-accent, #00f0ff);
+        }
+        .nav-link.active::after {
+          transform: scaleX(1);
+          transform-origin: left;
         }
         .nav-link:active {
           transform: scale(0.97);
@@ -74,16 +87,24 @@ export default function FloatingNav() {
           .nav-link:hover:not(.active) {
             color: rgba(255, 255, 255, 0.8);
           }
+          .nav-logo:hover {
+            animation: pulse-logo 2s infinite;
+          }
         }
-      `}} />
+        @keyframes pulse-logo {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.05); }
+        }
+      `}</style>
       <nav
         style={{
           position: 'fixed',
           top: '1.5rem',
           left: '50%',
-          transform: 'translateX(-50%)',
           zIndex: 50,
           backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
           border: '1px solid rgba(255, 255, 255, 0.06)',
           borderRadius: '9999px',
           padding: '0.5rem 1.5rem',
@@ -92,12 +113,14 @@ export default function FloatingNav() {
           gap: '1.5rem',
           opacity: isVisible ? 1 : 0,
           pointerEvents: isVisible ? 'auto' : 'none',
-          transition: 'opacity 300ms cubic-bezier(0.23, 1, 0.32, 1), transform 300ms cubic-bezier(0.23, 1, 0.32, 1)',
+          transform: isVisible ? 'translate(-50%, 0)' : 'translate(-50%, -100%)',
+          transition: 'opacity 300ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 300ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1))',
         }}
       >
         <a 
           href="#top" 
-          className="text-white hover:text-[color:var(--color-accent)] transition-colors duration-300 mr-2"
+          className="text-white nav-logo transition-colors duration-300 mr-2"
+          style={{ willChange: 'transform, opacity' }}
           onClick={(e) => {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -114,9 +137,9 @@ export default function FloatingNav() {
               href={link.href}
               className={`nav-link ${isActive ? 'active' : ''}`}
               style={{
-                fontFamily: 'monospace',
-                fontSize: '0.75rem', /* text-xs */
-                letterSpacing: '0.05em', /* tracking-wider */
+                fontFamily: 'var(--font-mono, monospace)',
+                fontSize: '0.75rem',
+                letterSpacing: '0.05em',
                 textTransform: 'uppercase',
                 textDecoration: 'none',
                 display: 'inline-block',
@@ -128,26 +151,38 @@ export default function FloatingNav() {
           );
         })}
 
-        {/* Sound Toggle */}
         <button
           onClick={toggleMute}
           className="nav-link flex items-center ml-2 border-l border-white/10 pl-4"
           style={{
-            fontFamily: 'monospace',
-            fontSize: '0.75rem',
-            letterSpacing: '0.05em',
-            textTransform: 'uppercase',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
             padding: '0',
             marginLeft: '0.5rem',
             paddingLeft: '1.5rem',
-            borderLeft: '1px solid rgba(255,255,255,0.1)'
+            borderLeft: '1px solid rgba(255,255,255,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            willChange: 'transform'
           }}
+          aria-label={isMuted ? 'Unmute sound' : 'Mute sound'}
           data-cursor="grow"
         >
-          {isMuted ? 'SOUND: OFF' : 'SOUND: ON'}
+          {isMuted ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <line x1="23" y1="9" x2="17" y2="15"></line>
+              <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+          )}
         </button>
       </nav>
     </>
