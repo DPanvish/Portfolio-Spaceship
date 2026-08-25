@@ -8,14 +8,18 @@ import TextScramble from '@/components/ui/TextScramble';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const projects = [
-  { id: '01', title: 'Stellar Dashboard', category: 'Web App', desc: 'Real-time analytics platform with 3D data visualization and live WebSocket feeds.', bg: '#0c0c12', accent: '#00f0ff' },
-  { id: '02', title: 'Nebula Commerce', category: 'E-Commerce', desc: 'High-performance storefront with immersive product experiences and AR previews.', bg: '#0a0a14', accent: '#a855f7' },
-  { id: '03', title: 'Quantum Editor', category: 'SaaS Tool', desc: 'Collaborative code editor with AI-powered suggestions and real-time pair programming.', bg: '#0f0a14', accent: '#f97316' },
-  { id: '04', title: 'Orbit Social', category: 'Mobile App', desc: 'Location-based social platform with AR integration and spatial audio experiences.', bg: '#0a140a', accent: '#22c55e' },
-];
+export interface Project {
+  id: string;
+  sort_order: number;
+  title: string;
+  category: string;
+  description: string;
+  bg_color: string;
+  accent_color: string;
+  link_url?: string;
+}
 
-export default function ProjectsSection() {
+export default function ProjectsSection({ projects }: { projects: Project[] }) {
   const sectionRef = useRef<HTMLElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -60,16 +64,16 @@ export default function ProjectsSection() {
             <div 
               className="flex flex-col gap-5 group cursor-pointer" 
               data-cursor="grow"
-              style={{ '--project-accent': project.accent } as React.CSSProperties}
+              style={{ '--project-accent': project.accent_color } as React.CSSProperties}
             >
               {/* Image area */}
               <div
                 className="relative w-full aspect-[16/10] overflow-hidden rounded-xl border border-white/5 transition-all duration-300 ease-out project-card-img"
-                style={{ backgroundColor: project.bg }}
+                style={{ backgroundColor: project.bg_color }}
               >
                 {/* Project number */}
                 <div className="absolute top-5 left-5 font-mono text-xs text-white/30 z-10">
-                  {project.id}
+                  {String(project.sort_order).padStart(2, '0')}
                 </div>
 
                 {/* Accent border overlay */}
@@ -81,7 +85,7 @@ export default function ProjectsSection() {
                 <div className="absolute inset-0 flex items-center justify-center transition-transform duration-300 ease-out group-hover:scale-105">
                   <span
                     className="text-6xl md:text-8xl font-bold opacity-[0.05] group-hover:opacity-[0.08] select-none transition-opacity duration-300"
-                    style={{ color: project.accent }}
+                    style={{ color: project.accent_color }}
                   >
                     {project.title.split(' ')[0]}
                   </span>
@@ -94,7 +98,7 @@ export default function ProjectsSection() {
                 <div className="absolute bottom-5 right-5 flex items-center gap-2 z-10 overflow-hidden">
                   <span 
                     className="font-mono text-xs tracking-widest uppercase translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-out" 
-                    style={{ color: project.accent, transitionDelay: '50ms' }}
+                    style={{ color: project.accent_color, transitionDelay: '50ms' }}
                   >
                     View Project
                   </span>
@@ -118,7 +122,7 @@ export default function ProjectsSection() {
                   <h3 className="text-xl md:text-2xl font-bold text-white/90 group-hover:text-white transition-colors duration-200">{project.title}</h3>
                   <span className="font-mono text-[10px] md:text-xs text-white/30 tracking-wider uppercase">{project.category}</span>
                 </div>
-                <p className="text-white/40 text-sm md:text-base leading-relaxed">{project.desc}</p>
+                <p className="text-white/40 text-sm md:text-base leading-relaxed">{project.description}</p>
               </div>
             </div>
           </TiltCard>

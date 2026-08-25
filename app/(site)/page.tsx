@@ -11,7 +11,24 @@ import Marquee from '@/components/ui/Marquee';
 import ScrollProgress from '@/components/ui/ScrollProgress';
 import Preloader from '@/components/ui/Preloader';
 
-export default function SitePage() {
+import { createClient } from '@/lib/supabase/server';
+
+export default async function SitePage() {
+  const supabase = await createClient();
+
+  const { data: projectsData } = await supabase
+    .from('projects')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  const { data: experienceData } = await supabase
+    .from('experience')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  const projects = projectsData || [];
+  const experiences = experienceData || [];
+
   return (
     <main>
       <Preloader />
@@ -25,8 +42,8 @@ export default function SitePage() {
       <Marquee text="CREATIVE DEVELOPER • DESIGN ENGINEER • 3D ARTIST • " speed={45} />
       
       <AboutSection />
-      <ProjectsSection />
-      <ExperienceSection />
+      <ProjectsSection projects={projects} />
+      <ExperienceSection experiences={experiences} />
       <ContactSection />
       <Footer />
     </main>
