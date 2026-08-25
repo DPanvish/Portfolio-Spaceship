@@ -1,6 +1,13 @@
 import { login, signup } from './actions'
 
-export default function LoginPage() {
+type Props = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function LoginPage({ searchParams }: Props) {
+  const resolvedSearchParams = await searchParams
+  const error = typeof resolvedSearchParams?.error === 'string' ? resolvedSearchParams.error : undefined
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-zinc-950">
       <div className="w-full max-w-sm p-8 space-y-6 bg-zinc-900 border border-zinc-800 rounded-xl">
@@ -11,6 +18,11 @@ export default function LoginPage() {
           <p className="text-sm text-zinc-500">
             Enter your credentials to access the terminal
           </p>
+          {error && (
+            <p className="text-sm text-red-500 mt-2 bg-red-500/10 border border-red-500/20 p-2 rounded-md">
+              {error}
+            </p>
+          )}
         </div>
         <form className="space-y-4">
           <div className="space-y-2">
