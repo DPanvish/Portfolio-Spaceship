@@ -7,7 +7,8 @@ export default async function AdminPage() {
   
   const { data: { user } } = await supabase.auth.getUser()
   
-  if (!user) {
+  if (!user || user.email !== process.env.ADMIN_EMAIL) {
+    if (user) await supabase.auth.signOut()
     redirect('/admin/login')
   }
 
