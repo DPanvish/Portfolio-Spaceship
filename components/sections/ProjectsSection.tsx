@@ -17,6 +17,7 @@ export interface Project {
   bg_color: string;
   accent_color: string;
   link_url?: string;
+  image_url?: string;
 }
 
 export default function ProjectsSection({ projects }: { projects: Project[] }) {
@@ -81,14 +82,23 @@ export default function ProjectsSection({ projects }: { projects: Project[] }) {
                   className="absolute inset-0 border-2 border-transparent group-hover:border-[var(--project-accent)] opacity-0 group-hover:opacity-100 rounded-xl transition-all duration-300 ease-out pointer-events-none z-20" 
                 />
 
-                {/* Center content placeholder */}
+                {/* Center content placeholder or Image */}
                 <div className="absolute inset-0 flex items-center justify-center transition-transform duration-300 ease-out group-hover:scale-105">
-                  <span
-                    className="text-6xl md:text-8xl font-bold opacity-[0.05] group-hover:opacity-[0.08] select-none transition-opacity duration-300"
-                    style={{ color: project.accent_color }}
-                  >
-                    {project.title.split(' ')[0]}
-                  </span>
+                  {project.image_url ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img 
+                      src={project.image_url} 
+                      alt={project.title} 
+                      className="w-full h-full object-cover" 
+                    />
+                  ) : (
+                    <span
+                      className="text-6xl md:text-8xl font-bold opacity-[0.05] group-hover:opacity-[0.08] select-none transition-opacity duration-300"
+                      style={{ color: project.accent_color }}
+                    >
+                      {project.title.split(' ')[0]}
+                    </span>
+                  )}
                 </div>
 
                 {/* Bottom gradient */}

@@ -26,6 +26,7 @@ export async function saveProject(formData: FormData, id?: string) {
     bg_color: formData.get('bg_color') as string || '#0a0a14',
     accent_color: formData.get('accent_color') as string || '#00f0ff',
     link_url: formData.get('link_url') as string || null,
+    image_url: formData.get('image_url') as string || null,
   }
 
   if (id) {

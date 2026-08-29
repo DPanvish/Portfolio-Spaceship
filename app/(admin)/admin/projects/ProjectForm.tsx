@@ -15,15 +15,21 @@ import {
   DialogFooter
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, ImagePlus } from 'lucide-react'
+import { CldUploadWidget } from 'next-cloudinary'
+import Image from 'next/image'
 
 export function ProjectDialog({ project }: { project?: any }) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [imageUrl, setImageUrl] = useState<string>(project?.image_url || '')
   
   const isEditing = !!project
 
   async function handleSubmit(formData: FormData) {
+    // Append the image_url to the formData before saving
+    formData.append('image_url', imageUrl)
+
     startTransition(async () => {
       try {
         await saveProject(formData, project?.id)
@@ -49,11 +55,47 @@ export function ProjectDialog({ project }: { project?: any }) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-zinc-950 border-zinc-800 text-zinc-100">
+      <DialogContent className="sm:max-w-[425px] bg-zinc-950 border-zinc-800 text-zinc-100 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit Project' : 'Add Project'}</DialogTitle>
         </DialogHeader>
         <form action={handleSubmit} className="space-y-4 pt-4">
+          <div className="space-y-2">
+            <Label className="text-zinc-400">Project Image</Label>
+            <div className="mt-2">
+              <CldUploadWidget 
+                uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
+                onSuccess={(result: any) => {
+                  setImageUrl(result.info.secure_url);
+                }}
+              >
+                {({ open }) => {
+                  return (
+                    <div 
+                      onClick={() => open()}
+                      className="border-2 border-dashed border-zinc-700 hover:border-zinc-500 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer transition-colors bg-zinc-900/50"
+                    >
+                      {imageUrl ? (
+                        <div className="relative w-full aspect-[16/9] rounded-md overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={imageUrl} alt="Project" className="object-cover w-full h-full" />
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                            <span className="text-sm font-medium">Change Image</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-6">
+                          <ImagePlus className="w-8 h-8 text-zinc-500 mb-2" />
+                          <span className="text-sm text-zinc-400">Click to upload image via Cloudinary</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }}
+              </CldUploadWidget>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="sort_order" className="text-zinc-400">Order</Label>
