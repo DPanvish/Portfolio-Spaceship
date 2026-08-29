@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { saveProject, deleteProject } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,19 +15,55 @@ import {
   DialogFooter
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, ImagePlus } from 'lucide-react'
-import { CldUploadWidget } from 'next-cloudinary'
-import Image from 'next/image'
+import { Plus, Pencil, Trash2, ImagePlus, X } from 'lucide-react'
 
 export function ProjectDialog({ project }: { project?: any }) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [imageUrl, setImageUrl] = useState<string>(project?.image_url || '')
+  const [isUploading, setIsUploading] = useState(false)
   
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const isEditing = !!project
 
+  // Handle native file selection
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    const toastId = toast.loading('Uploading image...')
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '')
+
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+      if (!cloudName) throw new Error('Cloudinary cloud name is not set')
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await res.json()
+      
+      if (data.secure_url) {
+        setImageUrl(data.secure_url)
+        toast.success('Image uploaded successfully', { id: toastId })
+      } else {
+        throw new Error(data.error?.message || 'Upload failed')
+      }
+    } catch (error: any) {
+      toast.error(error.message, { id: toastId })
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
   async function handleSubmit(formData: FormData) {
-    // Append the image_url to the formData before saving
     formData.append('image_url', imageUrl)
 
     startTransition(async () => {
@@ -62,37 +98,51 @@ export function ProjectDialog({ project }: { project?: any }) {
         <form action={handleSubmit} className="space-y-4 pt-4">
           <div className="space-y-2">
             <Label className="text-zinc-400">Project Image</Label>
+            
+            {/* Hidden Native File Input */}
+            <input 
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
+
             <div className="mt-2">
-              <CldUploadWidget 
-                uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET}
-                onSuccess={(result: any) => {
-                  setImageUrl(result.info.secure_url);
-                }}
-              >
-                {({ open }) => {
-                  return (
-                    <div 
-                      onClick={() => open()}
-                      className="border-2 border-dashed border-zinc-700 hover:border-zinc-500 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer transition-colors bg-zinc-900/50"
-                    >
-                      {imageUrl ? (
-                        <div className="relative w-full aspect-[16/9] rounded-md overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={imageUrl} alt="Project" className="object-cover w-full h-full" />
-                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                            <span className="text-sm font-medium">Change Image</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-6">
-                          <ImagePlus className="w-8 h-8 text-zinc-500 mb-2" />
-                          <span className="text-sm text-zinc-400">Click to upload image via Cloudinary</span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                }}
-              </CldUploadWidget>
+              {imageUrl ? (
+                <div className="relative w-full aspect-[16/9] rounded-md overflow-hidden border border-zinc-700">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={imageUrl} alt="Project" className="object-cover w-full h-full" />
+                  
+                  {/* Remove Button */}
+                  <button 
+                    type="button"
+                    onClick={() => setImageUrl('')}
+                    className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black text-white rounded-full transition-colors backdrop-blur-sm"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                  >
+                    <span className="text-sm font-medium">Change Image</span>
+                  </div>
+                </div>
+              ) : (
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed border-zinc-700 hover:border-zinc-500 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer transition-colors bg-zinc-900/50 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                >
+                  <div className="flex flex-col items-center justify-center py-6">
+                    <ImagePlus className="w-8 h-8 text-zinc-500 mb-2" />
+                    <span className="text-sm text-zinc-400">
+                      {isUploading ? 'Uploading...' : 'Click to choose file'}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

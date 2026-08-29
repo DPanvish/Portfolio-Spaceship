@@ -35,6 +35,15 @@ export default function Preloader() {
   const hasFinished = useRef(false);
 
   useEffect(() => {
+    // Force scroll to top on mount so reload doesn't resume scroll position mid-page 
+    // behind the preloader
+    if (typeof window !== 'undefined') {
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+    }
+
     if (reducedMotion) {
       setStage('hidden');
       setReady(true);
