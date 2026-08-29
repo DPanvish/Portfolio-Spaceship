@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { LayoutDashboard, FolderKanban, Briefcase, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, Briefcase, Settings, LogOut, User } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
 
 export default async function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -42,6 +42,10 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
           <Link href="/admin/experience" className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors">
             <Briefcase className="w-4 h-4" />
             Experience
+          </Link>
+          <Link href="/admin/about" className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors">
+            <User className="w-4 h-4" />
+            About Section
           </Link>
           <div className="pt-4 mt-4 border-t border-zinc-800">
             <Link href="/admin/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors">

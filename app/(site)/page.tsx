@@ -26,8 +26,15 @@ export default async function SitePage() {
     .select('*')
     .order('sort_order', { ascending: true });
 
+  const { data: aboutData } = await supabase
+    .from('about')
+    .select('*')
+    .limit(1)
+    .single();
+
   const projects = projectsData || [];
   const experiences = experienceData || [];
+  const about = aboutData || null;
 
   return (
     <main>
@@ -41,7 +48,7 @@ export default async function SitePage() {
       
       <Marquee text="CREATIVE DEVELOPER • DESIGN ENGINEER • 3D ARTIST • " speed={45} />
       
-      <AboutSection />
+      <AboutSection about={about} />
       <ProjectsSection projects={projects} />
       <ExperienceSection experiences={experiences} />
       <ContactSection />

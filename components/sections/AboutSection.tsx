@@ -46,7 +46,28 @@ function Counter({ target, suffix = '' }: { target: number; suffix?: string }) {
   );
 }
 
-export default function AboutSection() {
+export interface AboutData {
+  title_primary?: string;
+  title_secondary?: string;
+  paragraph_1?: string;
+  paragraph_2?: string;
+  skills?: string[];
+  years_exp?: number;
+  projects_count?: number;
+  lines_code?: number;
+}
+
+export default function AboutSection({ about }: { about?: AboutData | null }) {
+  // Use DB data or fallback to defaults
+  const title1 = about?.title_primary || 'Frontend';
+  const title2 = about?.title_secondary || 'Architect';
+  const p1 = about?.paragraph_1 || 'I build interfaces where every detail compounds into something that feels right. Performance-first, animation-aware, and obsessively crafted.';
+  const p2 = about?.paragraph_2 || 'Bridging the gap between design engineering and technical architecture — making software that people love without knowing why.';
+  const skillList = about?.skills?.length ? about.skills : skills;
+  const exp = about?.years_exp ?? 5;
+  const projs = about?.projects_count ?? 30;
+  const lines = about?.lines_code ?? 15;
+
   return (
     <section className="section" id="about">
       <div className="w-full max-w-7xl mx-auto px-6 md:px-16 lg:px-24 py-32">
@@ -60,21 +81,15 @@ export default function AboutSection() {
             <TextScramble text="// ABOUT" className="section-label" />
 
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[0.95] reveal-up" data-cursor="grow">
-              Frontend<br />
-              <span className="text-white/30">Architect</span>
+              {title1}<br />
+              <span className="text-white/30">{title2}</span>
             </h2>
 
             <div className="line" />
 
             <div className="space-y-5 text-white/45 text-base md:text-lg leading-relaxed">
-              <p className="reveal-up">
-                I build interfaces where every detail compounds into something that feels right. 
-                Performance-first, animation-aware, and obsessively crafted.
-              </p>
-              <p className="reveal-up">
-                Bridging the gap between design engineering and technical architecture — 
-                making software that people love without knowing why.
-              </p>
+              <p className="reveal-up">{p1}</p>
+              <p className="reveal-up">{p2}</p>
             </div>
           </div>
 
@@ -83,7 +98,7 @@ export default function AboutSection() {
             <p className="section-label reveal-up">{"// Tech Stack"}</p>
 
             <div className="stagger-group flex flex-wrap gap-3">
-              {skills.map((skill, index) => (
+              {skillList.map((skill, index) => (
                 <span 
                   key={skill} 
                   className="skill-tag stagger-item cursor-default transition-transform duration-200" 
@@ -98,15 +113,15 @@ export default function AboutSection() {
             {/* Animated stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
               <div className="reveal-up bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm transition-transform duration-200 ease-out hover:-translate-y-1">
-                <Counter target={5} suffix="+" />
+                <Counter target={exp} suffix="+" />
                 <p className="text-white/30 text-xs font-mono mt-2 tracking-wider uppercase">Years Exp</p>
               </div>
               <div className="reveal-up bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm transition-transform duration-200 ease-out hover:-translate-y-1" style={{ transitionDelay: '50ms' }}>
-                <Counter target={30} suffix="+" />
+                <Counter target={projs} suffix="+" />
                 <p className="text-white/30 text-xs font-mono mt-2 tracking-wider uppercase">Projects</p>
               </div>
               <div className="reveal-up bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm transition-transform duration-200 ease-out hover:-translate-y-1" style={{ transitionDelay: '100ms' }}>
-                <Counter target={15} suffix="K" />
+                <Counter target={lines} suffix="K" />
                 <p className="text-white/30 text-xs font-mono mt-2 tracking-wider uppercase">Lines/Day</p>
               </div>
             </div>
