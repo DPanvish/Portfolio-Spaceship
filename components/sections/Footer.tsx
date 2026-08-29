@@ -11,7 +11,7 @@ const SYSTEM_LOGS = [
   '> Ready for input_'
 ];
 
-export default function Footer() {
+export default function Footer({ settings }: { settings?: any }) {
   const [logs, setLogs] = useState<string[]>([]);
   const [logIndex, setLogIndex] = useState(0);
 
@@ -31,6 +31,20 @@ export default function Footer() {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const socials = [];
+  if (settings?.github_url) socials.push({ name: 'GitHub', url: settings.github_url });
+  if (settings?.twitter_url) socials.push({ name: 'Twitter', url: settings.twitter_url });
+  if (settings?.linkedin_url) socials.push({ name: 'LinkedIn', url: settings.linkedin_url });
+
+  // Fallback if no settings
+  if (socials.length === 0) {
+    socials.push(
+      { name: 'GitHub', url: 'https://github.com' },
+      { name: 'Twitter', url: 'https://twitter.com' },
+      { name: 'LinkedIn', url: 'https://linkedin.com' }
+    );
+  }
 
   return (
     <footer className="w-full bg-black pt-16 pb-8 relative overflow-hidden">
@@ -57,16 +71,16 @@ export default function Footer() {
 
         {/* Center: Social Links */}
         <div className="flex gap-8 font-mono text-xs tracking-widest uppercase">
-          {['GitHub', 'Twitter', 'LinkedIn'].map((platform) => (
+          {socials.map((platform) => (
             <a 
-              key={platform}
-              href={`https://${platform.toLowerCase()}.com`} 
+              key={platform.name}
+              href={platform.url} 
               target="_blank" 
               rel="noreferrer" 
               className="social-link relative text-white/50 hover:text-white transition-colors duration-200 py-1" 
               data-cursor="grow"
             >
-              {platform}
+              {platform.name}
               <span className="absolute left-0 bottom-0 w-full h-px bg-[color:var(--color-accent)] scale-x-0 origin-right transition-transform duration-300 ease-out" />
             </a>
           ))}

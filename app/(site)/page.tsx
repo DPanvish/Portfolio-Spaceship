@@ -32,9 +32,16 @@ export default async function SitePage() {
     .limit(1)
     .single();
 
+  const { data: settingsData } = await supabase
+    .from('settings')
+    .select('*')
+    .limit(1)
+    .single();
+
   const projects = projectsData || [];
   const experiences = experienceData || [];
   const about = aboutData || null;
+  const settings = settingsData || null;
 
   return (
     <main>
@@ -52,7 +59,7 @@ export default async function SitePage() {
       <ProjectsSection projects={projects} />
       <ExperienceSection experiences={experiences} />
       <ContactSection />
-      <Footer />
+      <Footer settings={settings} />
     </main>
   );
 }

@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import TextScramble from '@/components/ui/TextScramble';
 import TiltCard from '@/components/ui/TiltCard';
+import { sendContactMessage } from '@/app/actions/contact';
+import { toast } from 'sonner';
 
 export default function ContactSection() {
   const [coords, setCoords] = useState('47.6062, -122.3321');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   // Simulate updating coordinates
   useEffect(() => {
@@ -18,10 +20,17 @@ export default function ContactSection() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setTimeout(() => setIsSubmitting(false), 2000);
+  const handleSubmit = (formData: FormData) => {
+    startTransition(async () => {
+      const result = await sendContactMessage(formData);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success('Transmission successfully delivered!');
+        const form = document.getElementById('contact-form') as HTMLFormElement;
+        if (form) form.reset();
+      }
+    });
   };
 
   return (
@@ -40,11 +49,12 @@ export default function ContactSection() {
               <div className="line" />
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-8 stagger-group">
+            <form id="contact-form" action={handleSubmit} className="flex flex-col gap-8 stagger-group">
               <div className="group relative stagger-item">
                 <input 
                   type="text" 
                   id="name" 
+                  name="name"
                   required 
                   className="w-full bg-transparent border-b border-white/10 py-4 text-white placeholder-transparent focus:outline-none focus:border-[color:var(--color-accent)] focus:shadow-[0_1px_10px_-2px_var(--color-accent)] transition-all duration-300 peer"
                   placeholder="Name"
@@ -60,7 +70,8 @@ export default function ContactSection() {
               <div className="group relative stagger-item">
                 <input 
                   type="email" 
-                  id="email" 
+                  id="email"
+                  name="email" 
                   required 
                   className="w-full bg-transparent border-b border-white/10 py-4 text-white placeholder-transparent focus:outline-none focus:border-[color:var(--color-accent)] focus:shadow-[0_1px_10px_-2px_var(--color-accent)] transition-all duration-300 peer"
                   placeholder="Email"
@@ -76,6 +87,7 @@ export default function ContactSection() {
               <div className="group relative mt-2 stagger-item">
                 <textarea 
                   id="message" 
+                  name="message"
                   required 
                   rows={4}
                   className="w-full bg-transparent border-b border-white/10 py-4 text-white placeholder-transparent focus:outline-none focus:border-[color:var(--color-accent)] focus:shadow-[0_1px_10px_-2px_var(--color-accent)] transition-all duration-300 peer resize-none"
@@ -93,15 +105,15 @@ export default function ContactSection() {
                 type="submit" 
                 className="contact-btn self-start mt-4 stagger-item relative overflow-hidden" 
                 data-cursor="grow"
-                disabled={isSubmitting}
+                disabled={isPending}
               >
-                <span className={`flex items-center gap-2 transition-transform duration-300 ${isSubmitting ? '-translate-y-12' : 'translate-y-0'}`}>
+                <span className={`flex items-center gap-2 transition-transform duration-300 ${isPending ? '-translate-y-12' : 'translate-y-0'}`}>
                   Transmit Data
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M2 8h12M10 4l4 4-4 4" />
                   </svg>
                 </span>
-                <span className={`absolute inset-0 flex items-center justify-center transition-transform duration-300 ${isSubmitting ? 'translate-y-0' : 'translate-y-12'}`}>
+                <span className={`absolute inset-0 flex items-center justify-center transition-transform duration-300 ${isPending ? 'translate-y-0' : 'translate-y-12'}`}>
                   <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                 </span>
               </button>
