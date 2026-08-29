@@ -2,31 +2,16 @@
 
 import TextScramble from '@/components/ui/TextScramble';
 
-const experiences = [
-  {
-    id: '1',
-    role: 'Creative Developer',
-    company: 'Awwwards Agency',
-    period: '2023 — Present',
-    description: 'Building immersive 3D web experiences with React Three Fiber and GSAP. Leading the frontend architecture for high-profile client projects.',
-  },
-  {
-    id: '2',
-    role: 'Senior Frontend Engineer',
-    company: 'Tech Startup X',
-    period: '2021 — 2023',
-    description: 'Led the development of a complex data visualization dashboard serving 50K+ daily users. Implemented real-time WebSocket data feeds.',
-  },
-  {
-    id: '3',
-    role: 'Frontend Developer',
-    company: 'Digital Studio Y',
-    period: '2019 — 2021',
-    description: 'Built responsive web applications and interactive marketing sites. Introduced component-driven architecture and design systems.',
-  },
-];
+export interface Experience {
+  id: string;
+  sort_order: number;
+  role: string;
+  company: string;
+  period: string;
+  description: string;
+}
 
-export default function ExperienceSection() {
+export default function ExperienceSection({ experiences }: { experiences: Experience[] }) {
   return (
     <section className="section" id="experience">
       <div className="w-full max-w-7xl mx-auto px-6 md:px-16 lg:px-24 py-32">
